@@ -5,13 +5,12 @@ import assert from "node:assert/strict";
 import worker from "../src/index.js";
 import { extractAddress, findImpressumLink, nameProblem } from "../src/company.js";
 import { htmlToLines, safeUrl } from "../src/util.js";
-import { classify } from "../src/repair.js";
 
 const ORIGIN = "https://dhanush-satish-reddy.github.io";
 let ipCounter = 1;
 
 function env(extra = {}) {
-  return { ALLOWED_ORIGINS: ORIGIN, RATE_LIMITER: ok(), SEARCH_LIMITER: ok(), LOOKUP_LIMITER: ok(), ...extra };
+  return { ALLOWED_ORIGINS: ORIGIN, RATE_LIMITER: ok(), LOOKUP_LIMITER: ok(), ...extra };
 }
 function ok(success = true) { return { limit: async () => ({ success }) }; }
 
@@ -50,86 +49,6 @@ function jsonRes(obj, status = 200) {
   return new Response(JSON.stringify(obj), { status, headers: { "Content-Type": "application/json" } });
 }
 function reset(r) { routes = r; calls.length = 0; }
-
-// ---- Overpass fixtures ----
-const CENTER = { elements: [{ type: "relation", id: 1, center: { lat: 48.7651, lon: 11.4237 }, tags: { postal_code: "85049" } }] };
-const PLACES = { elements: [
-  { type: "area", id: 3600062611, tags: { admin_level: "4", boundary: "administrative", name: "Bayern" } },
-  { type: "node", id: 11, lat: 48.766, lon: 11.425, tags: { name: "Repair Café Ingolstadt", repair: "assisted_self_service", "addr:street": "Beispielweg", "addr:housenumber": "1", "addr:postcode": "85049", "addr:city": "Ingolstadt", opening_hours: "Sa 10:00-13:00", website: "repaircafe-in.example.org" } },
-  { type: "node", id: 12, lat: 48.77, lon: 11.43, tags: { name: "Hausgeräte Service Muster", craft: "electronics_repair", electronics_repair: "appliance" } },
-  { type: "way", id: 13, center: { lat: 48.76, lon: 11.40 }, tags: { name: "Handy Doktor", shop: "mobile_phone", repair: "yes" } },
-  { type: "node", id: 14, lat: 48.75, lon: 11.41, tags: { name: "Radl Werkstatt", shop: "bicycle", "service:bicycle:repair": "yes" } },
-  { type: "node", id: 15, lat: 48.75, lon: 11.41, tags: { craft: "electronics_repair" } },
-] };
-
-test("repair: valid postcode returns places for the device, state and OSM credit", async () => {
-  reset([["https://overpass-api.de", async (u, init) => jsonRes(String(init.body).includes("postal_code") ? CENTER : PLACES)]]);
-  const r = await call(get("/repair?plz=85049&dev=washer"), env());
-  assert.equal(r.status, 200);
-  assert.equal(r.body.state, "Bayern");
-  const names = r.body.places.map((p) => p.name);
-  assert.ok(names.includes("Repair Café Ingolstadt"));
-  assert.ok(names.includes("Hausgeräte Service Muster"));
-  assert.ok(!names.includes("Handy Doktor"), "phone shop is not shown for a washing machine");
-  assert.ok(!names.includes("Radl Werkstatt"));
-  assert.match(r.body.attribution, /OpenStreetMap/);
-  assert.match(r.headers.get("Cache-Control"), /max-age=86400/);
-  const cafe = r.body.places.find((p) => p.kind === "cafe");
-  assert.equal(cafe.website, "https://repaircafe-in.example.org/");
-  assert.match(cafe.osm, /^https:\/\/www\.openstreetmap\.org\/node\/11$/);
-  assert.ok(calls[0].init.headers["User-Agent"].startsWith("Secondwind/"));
-});
-
-test("repair: phone shows phone shops, e-bike shows bike workshops", async () => {
-  reset([["https://overpass-api.de", async (u, init) => jsonRes(String(init.body).includes("postal_code") ? CENTER : PLACES)]]);
-  const p = await call(get("/repair?plz=85050&dev=phone"), env());
-  assert.ok(p.body.places.some((x) => x.name === "Handy Doktor"));
-  const b = await call(get("/repair?plz=85051&dev=ebike"), env());
-  assert.deepEqual(b.body.places.map((x) => x.kind).sort(), ["bike", "cafe"]);
-});
-
-test("repair: invalid postcodes and devices are refused without calling Overpass", async () => {
-  reset([]);
-  for (const plz of ["", "8504", "850499", "abcde", "85049x", "1234%20"]) {
-    const r = await call(get(`/repair?plz=${plz}&dev=washer`), env());
-    assert.equal(r.status, 400);
-    assert.equal(r.body.error, "bad_plz");
-  }
-  const d = await call(get("/repair?plz=85049&dev=toaster"), env());
-  assert.equal(d.body.error, "bad_request");
-  assert.equal(calls.length, 0);
-});
-
-test("repair: unknown postcode -> plz_not_found", async () => {
-  reset([["https://overpass-api.de", async () => jsonRes({ elements: [] })]]);
-  const r = await call(get("/repair?plz=00000&dev=washer"), env());
-  assert.equal(r.status, 404);
-  assert.equal(r.body.error, "plz_not_found");
-});
-
-test("repair: no places nearby -> empty list, not an error", async () => {
-  reset([["https://overpass-api.de", async (u, init) => jsonRes(String(init.body).includes("postal_code") ? { elements: [{ type: "relation", id: 2, center: { lat: 54.1, lon: 8.9 } }] } : { elements: [] })]]);
-  const r = await call(get("/repair?plz=25999&dev=tv"), env());
-  assert.equal(r.status, 200);
-  assert.deepEqual(r.body.places, []);
-});
-
-test("repair: Overpass down (both servers) -> 503 unavailable", async () => {
-  reset([[/overpass/, async () => new Response("busy", { status: 504 })]]);
-  const r = await call(get("/repair?plz=10115&dev=washer"), env());
-  assert.equal(r.status, 503);
-  assert.equal(r.body.error, "unavailable");
-  assert.equal(calls.length, 2, "tries the second server once");
-});
-
-test("repair: rate limit and origin check", async () => {
-  reset([]);
-  const r = await call(get("/repair?plz=85049&dev=washer"), env({ SEARCH_LIMITER: ok(false) }));
-  assert.equal(r.status, 429);
-  const o = await call(get("/repair?plz=85049&dev=washer", { origin: "https://evil.example.com" }), env());
-  assert.equal(o.status, 403);
-  assert.equal(calls.length, 0);
-});
 
 // ---- company lookup ----
 const HOME = `<html><body><nav><a href="/produkte">Produkte</a></nav><footer><a href="/service/impressum">Impressum</a> <a href="https://other.example.net/impressum">Fremd</a></footer></body></html>`;
@@ -239,12 +158,10 @@ test("company: rate limit", async () => {
   assert.equal(r.status, 429);
 });
 
-test("helpers: Impressum link stays on the same site; device classification", () => {
+test("helpers: Impressum link stays on the same site", () => {
   assert.equal(findImpressumLink(HOME, "https://www.muster-hausgeraete.de/"), "https://www.muster-hausgeraete.de/service/impressum");
   assert.equal(safeUrl("shop.de").toString(), "https://shop.de/");
   assert.equal(nameProblem("MediaMarkt Ingolstadt"), null);
-  assert.equal(classify({ shop: "mobile_phone", repair: "yes" }, "washer"), null);
-  assert.equal(classify({ repair: "assisted_self_service" }, "tv").kind, "cafe");
 });
 
 test("company: real-world Impressum layouts (8 shops and brands) are read correctly", () => {

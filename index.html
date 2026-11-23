@@ -510,7 +510,7 @@ table.bonus th{font-size:12px;color:var(--muted);text-transform:uppercase;letter
           <button type="submit" class="btn primary" style="min-height:52px;font-size:16px;padding:0 18px" data-i18n="rpBtn">Suchen</button>
         </div>
         <div class="seg hidden" id="rpDevWrap" style="grid-auto-flow:row;grid-template-columns:repeat(3,minmax(0,1fr))"></div>
-        <p class="hint" data-i18n="rpNote">Kein GPS, kein Konto. Nur die Postleitzahl wird an unseren Server geschickt.</p>
+        <p class="hint" data-i18n="rpNote">Kein GPS, kein Konto. Deine Postleitzahl bleibt auf deinem Handy.</p>
       </form>
       <p class="msg" id="rpMsg" aria-live="polite"></p>
       <div class="list" id="rpList" aria-live="polite"></div>
@@ -615,9 +615,9 @@ de:{
   fuReason:'Welchen Grund haben sie genannt? (optional)', fuDate:'Datum deines ersten Briefs', fuDays:'Letzte Frist', fuBtn:'Zweiten Brief erstellen', fuOut:'Dein zweiter Brief',
   fuNeed:'Für den zweiten Brief brauchen wir deinen Namen, das Gerät und die Firma.', fuNeedBtn:'Angaben ergänzen',
   calTitle:'Secondwind: Frist abgelaufen – Antwort da?', calDesc:'Keine Antwort oder Ablehnung? Zweiten Brief erstellen:',
-  rpTitle:'Wo reparieren?', rpLead:'Repair-Cafés und Werkstätten in deiner Nähe.', plz:'Deine Postleitzahl', rpBtn:'Suchen', rpNote:'Kein GPS, kein Konto. Nur die Postleitzahl wird an unseren Server geschickt.',
-  rpBusy:'Suche in OpenStreetMap …', rpErr_bad_plz:'Bitte gib eine 5-stellige Postleitzahl ein.', rpErr_plz_not_found:'Diese Postleitzahl haben wir nicht gefunden. Tippfehler?', rpErr_rate_limited:'Zu viele Suchen. Bitte warte eine Minute.',
-  rpErr_unavailable:'Die Kartendaten sind gerade nicht erreichbar. Versuch es später noch einmal – oder nutze die Karte des Netzwerks Reparatur-Initiativen unten.',
+  rpTitle:'Wo reparieren?', rpLead:'Repair-Cafés und Werkstätten in deiner Nähe.', plz:'Deine Postleitzahl', rpBtn:'Suchen', rpNote:'Kein GPS, kein Konto. Deine Postleitzahl bleibt auf deinem Handy.',
+  rpBusy:'Suche …', rpErr_bad_plz:'Bitte gib eine 5-stellige Postleitzahl ein.', rpErr_plz_not_found:'Diese Postleitzahl haben wir nicht gefunden. Tippfehler?', rpErr_rate_limited:'Zu viele Suchen. Bitte warte eine Minute.',
+  rpErr_unavailable:'Die Reparatur-Daten konnten nicht geladen werden. Prüf deine Internetverbindung – oder nutze die Karte des Netzwerks Reparatur-Initiativen unten.',
   rpEmpty:'In OpenStreetMap ist im Umkreis von {r} km nichts Passendes eingetragen. Schau in die Karte des Netzwerks Reparatur-Initiativen – und wenn du einen Ort kennst, kannst du ihn bei OpenStreetMap eintragen.',
   rpFound:'{n} Orte im Umkreis von {r} km um {plz}', rpFoundFor:'passend für: {dev}', rpCafe:'Repair-Café', rpShop:'Werkstatt', rpBike:'Fahrradwerkstatt', rpHours:'Öffnungszeiten', rpWeb:'Website', rpMap:'Auf Karte', rpKm:'{km} km',
   rpAttr:'Daten © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap-Mitwirkende</a> (ODbL). Angaben ohne Gewähr – vorher anrufen oder auf der Website nachsehen.',
@@ -669,9 +669,9 @@ en:{
   fuReason:'What reason did they give? (optional)', fuDate:'Date of your first letter', fuDays:'Final deadline', fuBtn:'Create second letter', fuOut:'Your second letter',
   fuNeed:'For the second letter we need your name, the device and the company.', fuNeedBtn:'Add details',
   calTitle:'Secondwind: deadline passed – did they answer?', calDesc:'No answer or refused? Create the second letter:',
-  rpTitle:'Where to repair?', rpLead:'Repair cafés and repair shops near you.', plz:'Your postcode', rpBtn:'Search', rpNote:'No GPS, no account. Only the postcode is sent to our server.',
-  rpBusy:'Searching OpenStreetMap …', rpErr_bad_plz:'Please enter a 5-digit German postcode.', rpErr_plz_not_found:'We couldn’t find this postcode. Typo?', rpErr_rate_limited:'Too many searches. Please wait a minute.',
-  rpErr_unavailable:'The map data isn’t available right now. Please try again later – or use the Netzwerk Reparatur-Initiativen map below.',
+  rpTitle:'Where to repair?', rpLead:'Repair cafés and repair shops near you.', plz:'Your postcode', rpBtn:'Search', rpNote:'No GPS, no account. Your postcode stays on your phone.',
+  rpBusy:'Searching …', rpErr_bad_plz:'Please enter a 5-digit German postcode.', rpErr_plz_not_found:'We couldn’t find this postcode. Typo?', rpErr_rate_limited:'Too many searches. Please wait a minute.',
+  rpErr_unavailable:'The repair data couldn’t be loaded. Check your internet connection – or use the Netzwerk Reparatur-Initiativen map below.',
   rpEmpty:'OpenStreetMap has nothing matching within {r} km. Check the Netzwerk Reparatur-Initiativen map – and if you know a place, you can add it to OpenStreetMap.',
   rpFound:'{n} places within {r} km of {plz}', rpFoundFor:'matching: {dev}', rpCafe:'Repair café', rpShop:'Repair shop', rpBike:'Bike workshop', rpHours:'Opening hours', rpWeb:'Website', rpMap:'On map', rpKm:'{km} km',
   rpAttr:'Data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> (ODbL). No guarantee – call or check their website first.',
@@ -1361,12 +1361,13 @@ const BONUS = {
   thueringen(){ const D = de(); return `<div class="card section"><h2>${t('bonusTitle')} Thüringen</h2><span class="badge bad">${D ? 'Beendet (Ende 2025)' : 'Ended (end of 2025)'}</span><p class="hint" style="color:var(--ink)">${D ? 'Stattdessen werden Repair-Cafés und Reparaturtage gefördert („Thüringen repariert“).' : 'Instead, repair cafés and repair days are funded (“Thüringen repariert”).'}</p><a href="https://www.vzth.de/reparaturbonus" target="_blank" rel="noopener">Verbraucherzentrale Thüringen ↗</a></div>`; },
   other(state){ const D = de(); return `<p class="note">${D ? `${state ? esc(state) + ': ' : ''}Kein Reparaturbonus des Landes (Stand 23.11.2026). Manche Städte haben eigene Programme – frag bei deiner Stadt oder der Verbraucherzentrale.` : `${state ? esc(state) + ': ' : ''}No state repair bonus (as of 23 Nov 2026). Some cities run their own schemes – ask your city or the Verbraucherzentrale.`}</p>`; }
 };
-function bonusFor(state){
-  const s = (state || '').toLowerCase();
-  if (s.includes('sachsen') && !s.includes('anhalt') && !s.includes('nieder')) return BONUS.sachsen();
-  if (s === 'berlin') return BONUS.berlin();
-  if (s.includes('thüringen')) return BONUS.thueringen();
-  return BONUS.other(state);
+function bonusFor(states){
+  states = states || [];
+  const out = [];
+  if (states.includes('SN')) out.push(BONUS.sachsen());
+  if (states.includes('BE')) out.push(BONUS.berlin());
+  if (states.includes('TH')) out.push(BONUS.thueringen());
+  return out.length ? out.join('') : BONUS.other(states.map(c => STATE_NAMES[c]).filter(Boolean).join(' / '));
 }
 function mapLink(c){ return c ? `https://www.reparatur-initiativen.de/widgets/map?lat=${c.lat}&lng=${c.lon}&zoomLevel=11` : 'https://www.reparatur-initiativen.de/'; }
 function renderRepairMore(center){
@@ -1404,29 +1405,86 @@ function renderPlaces(r){
       ${addr ? `<span style="font-size:15px">${esc(addr)}</span>` : ''}
       ${p.hours ? `<span class="hint">${t('rpHours')}: ${esc(p.hours)}</span>` : ''}
       <div class="links">${p.website ? `<a class="btn ghost small" href="${esc(p.website)}" target="_blank" rel="noopener">${t('rpWeb')} ↗</a>` : ''}<a class="btn ghost small" href="${esc(p.osm)}" target="_blank" rel="noopener">${icon('pin')}${t('rpMap')}</a></div></div>`;
-  }).join('') + `<p class="attr">${t('rpAttr')}</p>`;
-  $('#rpBonus').innerHTML = bonusFor(r.state);
+  }).join('') + `<p class="attr">${t('rpAttr')} ${D ? 'Stand der Daten' : 'Data as of'}: ${esc(D ? fmtDE(parseDate(r.updated)) : fmtL(parseDate(r.updated)))}.</p>`;
+  $('#rpBonus').innerHTML = bonusFor(r.states);
 }
 $('#plz').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 5); });
+/* ---- Local repair data (OpenStreetMap, refreshed monthly by a GitHub job). The postcode never leaves the phone. ---- */
+const STATE_NAMES = {BW:'Baden-Württemberg', BY:'Bayern', BE:'Berlin', BB:'Brandenburg', HB:'Bremen', HH:'Hamburg', HE:'Hessen', MV:'Mecklenburg-Vorpommern', NI:'Niedersachsen', NW:'Nordrhein-Westfalen', RP:'Rheinland-Pfalz', SL:'Saarland', SN:'Sachsen', ST:'Sachsen-Anhalt', SH:'Schleswig-Holstein', TH:'Thüringen'};
+const RADIUS_KM = 15, MAX_PLACES = 25;
+const dataCache = {};
+async function getJSON(path){
+  if (path in dataCache) return dataCache[path];
+  const r = await fetch(path, {cache:'no-cache'});
+  if (!r.ok) throw Object.assign(new Error('http ' + r.status), {status: r.status});
+  return (dataCache[path] = await r.json());
+}
+function kmBetween(a, b){
+  const R = 6371, rad = d => d * Math.PI / 180;
+  const dLat = rad(b.lat - a.lat), dLon = rad(b.lon - a.lon);
+  const x = Math.sin(dLat/2)**2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLon/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(x));
+}
+const APPLIANCE = ['washer','dish','fridge','dryer','heater','vacuum'], PHONE = ['phone','tablet','cordless'];
+// Does this place fit the device? Returns {kind, score} or null.
+function classifyPlace(t, name, d){
+  const er = (t.electronics_repair || '').toLowerCase(), shop = t.shop || '';
+  if (t.repair === 'assisted_self_service' || /repair.?caf/i.test(name)) return {kind:'cafe', score:3};
+  const fitsA = /appliance|household|white_goods|domestic/.test(er) || shop === 'appliance' || shop === 'vacuum_cleaner';
+  const fitsP = /phone|mobile|tablet|computer/.test(er) || shop === 'mobile_phone' || shop === 'computer' || t['service:mobile_phone:repair'] === 'yes';
+  const fitsT = /tv|television|audio|video|hifi/.test(er) || shop === 'hifi' || shop === 'electronics';
+  const generic = !er && t.craft === 'electronics_repair';
+  if (shop === 'bicycle') return (d === 'ebike' || d === 'any') ? {kind:'bike', score:2} : null;
+  if (d === 'ebike') return null;
+  if (d === 'any' || d === 'other') return {kind:'shop', score:1};
+  if (APPLIANCE.includes(d)) return fitsA ? {kind:'shop', score:2} : generic ? {kind:'shop', score:1} : null;
+  if (PHONE.includes(d)) return fitsP ? {kind:'shop', score:2} : generic ? {kind:'shop', score:1} : null;
+  if (d === 'tv') return fitsT ? {kind:'shop', score:2} : generic ? {kind:'shop', score:1} : null;
+  return {kind:'shop', score:1};
+}
+function cleanUrl(v){
+  if (!v) return null;
+  let u = String(v).trim(); if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
+  try { const x = new URL(u); return /^https?:$/.test(x.protocol) && x.hostname.includes('.') ? x.toString() : null; } catch { return null; }
+}
+async function searchRepair(plz, devId){
+  const meta = await getJSON('data/meta.json');
+  const part = await getJSON(`data/plz/${plz[0]}.json`);
+  const hit = part[plz];
+  if (!hit) return {error:'plz_not_found'};
+  const center = {lat: hit[0], lon: hit[1]};
+  const dLat = RADIUS_KM / 111, dLon = RADIUS_KM / (111 * Math.cos(center.lat * Math.PI / 180));
+  const keys = [];
+  for (let la = Math.floor(center.lat - dLat); la <= Math.floor(center.lat + dLat); la++)
+    for (let lo = Math.floor(center.lon - dLon); lo <= Math.floor(center.lon + dLon); lo++)
+      if (meta.tiles.includes(`${la}_${lo}`)) keys.push(`${la}_${lo}`);
+  const lists = await Promise.all(keys.map(k => getJSON(`data/repair/${k}.json`)));
+  const seen = new Set(), places = [];
+  for (const p of lists.flat()){
+    const km = kmBetween(center, {lat:p.la, lon:p.lo});
+    if (km > RADIUS_KM) continue;
+    const cls = classifyPlace(p.t || {}, p.n, devId); if (!cls) continue;
+    const key = p.n.toLowerCase() + '|' + (p.s || '');
+    if (seen.has(key)) continue; seen.add(key);
+    const type = {n:'node', w:'way', r:'relation'}[p.o[0]] || 'node';
+    places.push({name:p.n, kind:cls.kind, score:cls.score, street:p.s || null, city:p.c || null, hours:p.h || null, website:cleanUrl(p.w), osm:`https://www.openstreetmap.org/${type}/${p.o.slice(1)}`, km: Math.round(km * 10) / 10});
+  }
+  places.sort((a, b) => b.score - a.score || a.km - b.km);
+  return {plz, center, states: hit[2] || [], places: places.slice(0, MAX_PLACES), radius_km: RADIUS_KM, updated: meta.updated};
+}
 $('#rpForm').addEventListener('submit', async e => {
   e.preventDefault();
   const plz = $('#plz').value.trim(), msg = $('#rpMsg'), list = $('#rpList');
   msg.classList.remove('err'); $('#rpBonus').innerHTML = '';
   if (!/^\d{5}$/.test(plz)){ msg.textContent = t('rpErr_bad_plz'); msg.classList.add('err'); return; }
   const devId = S.device || S.rpDev || 'any';
-  msg.textContent = t('rpBusy'); list.innerHTML = '<div class="skel"></div><div class="skel"></div><div class="skel"></div>';
-  let r, j;
-  try {
-    const ctrl = new AbortController(); const timer = setTimeout(() => ctrl.abort(), 45000);
-    r = await fetch(`${WORKER_URL}/repair?plz=${plz}&dev=${encodeURIComponent(devId)}`, {signal: ctrl.signal});
-    clearTimeout(timer);
-    j = await r.json().catch(() => ({}));
-  } catch { j = {error:'unavailable'}; r = {ok:false}; }
+  msg.textContent = t('rpBusy'); list.innerHTML = '<div class="skel"></div><div class="skel"></div>';
+  let j;
+  try { j = await searchRepair(plz, devId); } catch { j = {error:'unavailable'}; }
   list.innerHTML = ''; msg.textContent = '';
-  if (!r.ok || j.error){
-    const k = ['bad_plz','plz_not_found','rate_limited'].includes(j.error) ? j.error : 'unavailable';
-    msg.textContent = t('rpErr_' + k); msg.classList.add('err');
-    if (k === 'unavailable') $('#rpMoreList').closest('details').open = true;
+  if (j.error){
+    msg.textContent = t('rpErr_' + j.error); msg.classList.add('err');
+    if (j.error === 'unavailable') $('#rpMoreList').closest('details').open = true;
     return;
   }
   S.plzResult = j; renderRepairMore(j.center); renderPlaces(j);
@@ -1458,16 +1516,16 @@ function renderInfo(){
       <li><a href="https://www.evz.de/" target="_blank" rel="noopener">${D ? 'Europäisches Verbraucherzentrum Deutschland' : 'European Consumer Centre Germany'}</a> – ${D ? 'bei Firmen in anderen EU-Ländern, kostenlos' : 'for companies in other EU countries, free'}</li>
       <li><a href="https://www.verbraucher-schlichter.de/" target="_blank" rel="noopener">Universalschlichtungsstelle des Bundes</a></li></ul>`;
   const privacy = D ? `<p>Diese Seite setzt keine Cookies, hat kein Tracking und speichert nichts auf einem Server. Alles, was du eingibst, bleibt in deinem Browser – auch nach dem Schließen wird nichts gespeichert.</p>
-      <p>Nur in drei Fällen schickt die Seite etwas an unseren Server (Cloudflare Worker), der nichts speichert und nichts protokolliert:</p>
+      <p>Nur in zwei Fällen schickt die Seite etwas an unseren Server (Cloudflare Worker), der nichts speichert und nichts protokolliert:</p>
       <ul><li><strong>„Auf Deutsch formulieren lassen“:</strong> nur der Problem-Text, einmal, an Cloudflare Workers AI.</li>
-      <li><strong>„Wo reparieren?“:</strong> nur die Postleitzahl (und die Geräteart). Der Server fragt damit OpenStreetMap ab. Die Ergebnisse pro Postleitzahl können bis zu 24 Stunden zwischengespeichert werden – ohne Bezug zu dir.</li>
-      <li><strong>„Online nachschauen“:</strong> nur der Firmenname (und ggf. die Website). Der Server sucht damit die offizielle Website (über Groq oder Wikidata) und liest deren Impressum.</li></ul>
+            <li><strong>„Online nachschauen“:</strong> nur der Firmenname (und ggf. die Website). Der Server sucht damit die offizielle Website (über Groq oder Wikidata) und liest deren Impressum.</li></ul>
+      <p>„Wo reparieren?“ sucht direkt auf deinem Handy in einer Liste aus OpenStreetMap, die einmal im Monat aktualisiert wird – deine Postleitzahl wird nicht verschickt.</p>
       <p>Cloudflare sieht dabei technisch deine IP-Adresse; wir nutzen sie nur verschlüsselt für die Begrenzung der Anfragen pro Minute und speichern sie nicht.</p>`
     : `<p>This page sets no cookies, has no tracking and stores nothing on a server. Everything you type stays in your browser – nothing is saved after you close it.</p>
-      <p>The page only sends something to our server (a Cloudflare Worker that stores and logs nothing) in three cases:</p>
+      <p>The page only sends something to our server (a Cloudflare Worker that stores and logs nothing) in two cases:</p>
       <ul><li><strong>“Turn it into German”:</strong> just the problem text, once, to Cloudflare Workers AI.</li>
-      <li><strong>“Where to repair?”:</strong> just the postcode (and the device type). The server uses it to query OpenStreetMap. Results per postcode may be cached for up to 24 hours – with no link to you.</li>
-      <li><strong>“Look it up online”:</strong> just the company name (and website, if given). The server uses it to find the official website (via Groq or Wikidata) and reads its Impressum.</li></ul>
+            <li><strong>“Look it up online”:</strong> just the company name (and website, if given). The server uses it to find the official website (via Groq or Wikidata) and reads its Impressum.</li></ul>
+      <p>“Where to repair?” searches on your phone in a list from OpenStreetMap that is updated once a month – your postcode is not sent anywhere.</p>
       <p>Cloudflare technically sees your IP address; we only use it in hashed form to limit requests per minute and don’t store it.</p>`;
   const src = `<ol style="padding-left:18px;margin:0">
       <li><a href="https://eur-lex.europa.eu/eli/dir/2024/1799/oj" target="_blank" rel="noopener">Richtlinie (EU) 2024/1799</a> · <a href="https://eur-lex.europa.eu/eli/dir_del/2026/74/oj" target="_blank" rel="noopener">Delegierte Richtlinie (EU) 2026/74</a></li>

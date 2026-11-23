@@ -10,25 +10,25 @@ Secondwind is a free, mobile-first helper (DE/EN) for using the EU Right to Repa
    - **Company not in the list?** The Worker reads the address from the company's own Impressum page. It is shown as "nicht geprüft" until you confirm it. Nothing is ever invented: if no address is found, the app says so and tells you where to look.
    - **Any language:** describe the defect in your language and get a short German sentence to check.
 3. **Nachfassen / Follow up** – second letter if there's no answer, a refusal, or the repair failed – plus who helps next.
-4. **Wo reparieren? / Where to repair** – enter your postcode: repair cafés and repair shops nearby from OpenStreetMap, filtered to your device. The repair bonus is shown only if your postcode is in a state that has one.
+4. **Wo reparieren? / Where to repair** – enter your postcode: repair cafés and repair shops within 15 km from OpenStreetMap, filtered to your device. The search runs on the phone; the postcode is never sent anywhere. The repair bonus is shown only if your postcode is in a state that has one.
 
 The page stores nothing, sets no cookies and has no tracking. See "Datenschutz" in the app's Info screen for exactly what is sent where.
 
 ## Files
 - `index.html` – the whole app (single file)
 - `companies.json` – company list. Edit this file to add or fix a company; no code changes needed. Every entry needs `source` (official page) and `checked` (date).
+- `data/` – repair places and postcodes from OpenStreetMap (© OpenStreetMap contributors, ODbL). Refreshed automatically once a month by `.github/workflows/refresh-repair-data.yml` (script: `tools/build-repair-data.mjs`). To refresh by hand: GitHub → Actions → "Refresh repair data" → Run workflow.
 - `manifest.json`, `icon.svg`, `icon-180.png`, `icon-512.png` – home-screen app icon
 - `worker/` – the only backend (Cloudflare Worker)
 
 ## Backend (Cloudflare Worker in `worker/`)
 - `POST /translate` – defect text → short German sentence (Workers AI)
-- `GET /repair?plz=…&dev=…` – repair places from OpenStreetMap (Overpass API), cached per postcode
 - `POST /company` – company address from its Impressum (optional web search via Groq if the `GROQ_API_KEY` secret is set; otherwise Wikidata or the website the user pastes)
-- Abuse protection: only requests from the GitHub Pages site, rate limits (5 / 10 / 3 per minute), length limits, off-topic refusal, no internal web addresses, logs off, nothing stored.
+- Abuse protection: only requests from the GitHub Pages site, rate limits (5 / 3 per minute), length limits, off-topic refusal, no internal web addresses, logs off, nothing stored.
 - Tests: `cd worker && npm test` (no account or internet needed)
 
 ## Data and credits
-- Repair places: © OpenStreetMap contributors, ODbL
+- Repair places and postcodes: © OpenStreetMap contributors, ODbL (the files in `data/` are shared under the same licence)
 - Company addresses: official company websites (source and date per entry)
 
 ## Disclaimer

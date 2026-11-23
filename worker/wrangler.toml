@@ -1,6 +1,5 @@
 # Cloudflare Worker for Secondwind (the only backend).
 #   POST /translate  defect description (any language) -> short German sentence (Workers AI)
-#   GET  /repair     repair cafés and repair shops near a postcode (OpenStreetMap / Overpass)
 #   POST /company    a company's postal address, read from its own Impressum page
 # Deploy: Cloudflare dashboard > Workers & Pages > secondwind (connected to GitHub, root directory "worker").
 # No database, no logs. Nothing the user types is stored.
@@ -22,13 +21,6 @@ name = "RATE_LIMITER"      # translation: 5 per minute
 namespace_id = "2611"
   [ratelimits.simple]
   limit = 5
-  period = 60
-
-[[ratelimits]]
-name = "SEARCH_LIMITER"    # postcode search: 10 per minute
-namespace_id = "2612"
-  [ratelimits.simple]
-  limit = 10
   period = 60
 
 [[ratelimits]]

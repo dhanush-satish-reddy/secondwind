@@ -1,11 +1,9 @@
 // Secondwind Worker
 // POST /translate  {"text": "..."}                 -> {"de": "..."}          (Workers AI)
-// GET  /repair?plz=85049&dev=washer                -> repair cafés and shops (OpenStreetMap)
 // POST /company   {"name": "...", "website": "..."} -> address from the company's Impressum
 // Errors: {"error": "code"}. Nothing the user types is stored or logged.
 
 import { allowedOrigins, json, rateLimit, safeUrl } from "./util.js";
-import { lookupRepair, DEVICES, REPAIR_CACHE_SECONDS } from "./repair.js";
 import { lookupCompany, cleanName, nameProblem } from "./company.js";
 
 export const MODEL = "@cf/google/gemma-4-26b-a4b-it";
@@ -107,24 +105,6 @@ async function handleTranslate(request, env, okOrigin) {
   return json({ de }, 200, okOrigin);
 }
 
-async function handleRepair(request, env, okOrigin, url) {
-  if (request.method !== "GET") return json({ error: "method" }, 405, okOrigin);
-  const plz = (url.searchParams.get("plz") || "").trim();
-  const dev = (url.searchParams.get("dev") || "any").trim();
-  if (!/^\d{5}$/.test(plz)) return json({ error: "bad_plz" }, 400, okOrigin);
-  if (!DEVICES.includes(dev)) return json({ error: "bad_request" }, 400, okOrigin);
-  if (!(await rateLimit(request, env.SEARCH_LIMITER, "rp", 10))) return json({ error: "rate_limited" }, 429, okOrigin);
-  let r;
-  try {
-    r = await lookupRepair(plz, dev, { cache: env.CACHE });
-  } catch (e) {
-    // detail = only the map servers' status codes (no user data), to diagnose outages
-    return json({ error: "unavailable", detail: String((e && e.detail) || "").slice(0, 120) }, 503, okOrigin);
-  }
-  if (r.error) return json({ error: r.error }, 404, okOrigin);
-  return json(r, 200, okOrigin, { "Cache-Control": `public, max-age=${REPAIR_CACHE_SECONDS}` });
-}
-
 async function handleCompany(request, env, okOrigin) {
   if (request.method !== "POST") return json({ error: "method" }, 405, okOrigin);
   if (!(await rateLimit(request, env.LOOKUP_LIMITER, "co", 3))) return json({ error: "rate_limited" }, 429, okOrigin);
@@ -170,7 +150,7 @@ export default {
         },
       });
     }
-    const routes = { "/translate": handleTranslate, "/repair": handleRepair, "/company": handleCompany };
+    const routes = { "/translate": handleTranslate, "/company": handleCompany };
     const handler = routes[url.pathname];
     if (!handler) return json({ error: "not_found" }, 404, okOrigin);
     if (!okOrigin) return json({ error: "origin" }, 403, "");
