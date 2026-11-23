@@ -31,7 +31,7 @@ header.top .wrap{display:flex;align-items:center;justify-content:space-between;h
 .hero h1{font-size:clamp(28px,7vw,40px);line-height:1.12;margin:0 0 10px;letter-spacing:-.02em}
 .hero p{margin:0 0 20px;color:var(--muted);font-size:18px}
 .jump{display:grid;gap:10px;grid-template-columns:1fr}
-@media(min-width:560px){.jump{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:560px){.jump{grid-template-columns:repeat(2,1fr)}}
 .jump a{display:flex;gap:10px;align-items:center;padding:14px 16px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);text-decoration:none;color:var(--ink);font-weight:600;box-shadow:var(--shadow)}
 .jump a span.n{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:14px;flex:none}
 section.block{margin:34px 0}
@@ -90,13 +90,20 @@ footer li{margin:4px 0}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:999px;font-size:15px;opacity:0;transition:.25s;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .hidden{display:none!important}
+.btnrow .wide{grid-column:1/-1}
+.brandinfo{font-size:14px;color:var(--muted);margin-top:8px;line-height:1.45}
+.brandinfo a{font-weight:600}
+.trbox{margin-top:10px;border:1px solid #bcdcca;border-radius:12px;padding:12px;background:var(--accent-soft)}
+.trbox textarea{min-height:80px;background:#fff}
+.trrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.trrow .btn{flex:1 1 140px}
+.msg{font-size:14px;margin-top:6px}
+.msg.err{color:var(--bad)}
+.urgent{background:var(--bad-soft);border:1px solid #ebc6be;border-radius:10px;padding:8px 10px;margin:8px 0}
 @media print{
-  header.top,.hero,#check,#where,footer,.btnrow,.explain,#letterForm,.lead,section.block>h2{display:none!important}
+  body>*:not(#printLetter){display:none!important}
   body{background:#fff}
-  .card{border:0;box-shadow:none;padding:0}
-  .out textarea{border:0;min-height:auto;height:auto;font:12pt/1.45 Georgia,serif;white-space:pre-wrap}
-  #printLetter{display:block!important;white-space:pre-wrap;font:12pt/1.5 Georgia,serif}
-  .out textarea{display:none}
+  #printLetter{display:block!important;white-space:pre-wrap;font:12pt/1.5 Georgia,serif;color:#000}
 }
 #printLetter{display:none}
 </style>
@@ -124,14 +131,15 @@ footer li{margin:4px 0}
     <nav class="jump">
       <a href="#check"><span class="n">1</span><span data-i18n="nav1">Rechte prüfen</span></a>
       <a href="#letter"><span class="n">2</span><span data-i18n="nav2">Brief erstellen</span></a>
-      <a href="#where"><span class="n">3</span><span data-i18n="nav3">Wo reparieren?</span></a>
+      <a href="#followup"><span class="n">3</span><span data-i18n="nav3f">Keine Antwort? Nachfassen</span></a>
+      <a href="#where"><span class="n">4</span><span data-i18n="nav3">Wo reparieren?</span></a>
     </nav>
   </div>
 
   <!-- 1. CHECKER -->
   <section class="block" id="check">
     <h2 data-i18n="checkTitle">1 · Kann ich das reparieren lassen?</h2>
-    <p class="lead" data-i18n="checkLead">Drei Fragen. Deine Angaben bleiben auf deinem Gerät.</p>
+    <p class="lead" data-i18n="checkLead">Vier Fragen. Deine Angaben bleiben auf deinem Gerät.</p>
     <form class="card" id="checkForm" novalidate>
       <label class="f" for="device" data-i18n="qDevice">Was ist kaputt?</label>
       <select id="device" required></select>
@@ -177,6 +185,12 @@ footer li{margin:4px 0}
         <label class="f" for="lMail" data-i18n="lMail">Deine E-Mail oder Telefon (optional)</label>
         <input type="text" id="lMail" autocomplete="email">
 
+        <div id="brandWrap" class="hidden">
+          <label class="f" for="lBrand"><span data-i18n="lBrand">Marke – füllt die Hersteller-Adresse aus</span></label>
+          <select id="lBrand"></select>
+          <div class="brandinfo" id="brandInfo" aria-live="polite"></div>
+        </div>
+
         <label class="f" for="lRecip"><span data-i18n="lRecip">Empfänger (Firma und Adresse)</span>
           <div class="hint" id="recipHint" data-i18n="lRecipHintSeller">Steht auf deiner Rechnung oder im Impressum des Shops.</div>
         </label>
@@ -199,7 +213,21 @@ footer li{margin:4px 0}
         <label class="f" for="lDefect"><span data-i18n="lDefect">Was ist das Problem?</span>
           <div class="hint" data-i18n="lDefectHint">Kurz und konkret, gern auf Deutsch. Z. B. „Pumpt kein Wasser ab, Fehlercode E18“.</div>
         </label>
-        <textarea id="lDefect" rows="3"></textarea>
+        <textarea id="lDefect" rows="3" maxlength="500"></textarea>
+        <div id="trWrap" class="hidden">
+          <div class="trrow"><button type="button" class="btn ghost" id="bTr" data-i18n="bTr">Auf Deutsch formulieren lassen</button></div>
+          <div class="hint" data-i18n="trNote">Schreib in deiner Sprache. Der Text wird dafür einmal an unseren Übersetzungsdienst (Cloudflare) geschickt und nicht gespeichert. Bitte keine Namen oder Adressen hineinschreiben.</div>
+          <div class="msg" id="trMsg" aria-live="polite"></div>
+          <div class="trbox hidden" id="trBox">
+            <label class="f" for="trText" style="margin-top:0" data-i18n="trProposal">Vorschlag auf Deutsch – bitte prüfen. Stimmt alles?</label>
+            <textarea id="trText" rows="3" maxlength="400"></textarea>
+            <div class="hint" data-i18n="trEditHint">Du kannst den Text hier noch ändern. Erst „Übernehmen“ setzt ihn in den Brief.</div>
+            <div class="trrow">
+              <button type="button" class="btn primary" style="margin:0" id="bTrUse" data-i18n="bTrUse">Übernehmen</button>
+              <button type="button" class="btn ghost" id="bTrDrop" data-i18n="bTrDrop">Verwerfen</button>
+            </div>
+          </div>
+        </div>
         <label class="f" for="lSince" data-i18n="lSince">Seit wann? (optional)</label>
         <input type="date" id="lSince">
 
@@ -230,21 +258,74 @@ footer li{margin:4px 0}
       <div class="out hidden" id="out">
         <label class="f" for="letterText" data-i18n="lOut">Dein Brief (du kannst ihn hier noch ändern)</label>
         <textarea id="letterText" spellcheck="false"></textarea>
-        <div id="printLetter"></div>
-        <div class="btnrow">
-          <button class="btn ghost" type="button" id="bCopy" data-i18n="bCopy">Kopieren</button>
-          <a class="btn ghost" id="bMail" href="#" data-i18n="bMail">Als E-Mail öffnen</a>
-          <button class="btn ghost" type="button" id="bPrint" data-i18n="bPrint">Drucken / PDF</button>
-          <button class="btn ghost" type="button" id="bDown" data-i18n="bDown">Als Datei speichern</button>
+        <div class="btnrow" data-for="letterText">
+          <button class="btn ghost" type="button" data-act="copy" data-i18n="bCopy">Kopieren</button>
+          <a class="btn ghost" href="#" data-act="mail" data-i18n="bMail">Als E-Mail öffnen</a>
+          <button class="btn ghost" type="button" data-act="print" data-i18n="bPrint">Drucken / PDF</button>
+          <button class="btn ghost" type="button" data-act="down" data-i18n="bDown">Als Datei speichern</button>
+          <button class="btn ghost wide" type="button" data-act="cal" data-i18n="bCal">📅 Frist in meinen Kalender</button>
         </div>
         <div class="res info explain" id="explain"></div>
       </div>
     </div>
   </section>
 
+  <!-- 3. FOLLOW-UP -->
+  <section class="block" id="followup">
+    <h2 data-i18n="fuTitle">3 · Keine Antwort oder abgelehnt?</h2>
+    <p class="lead" data-i18n="fuLead">Die Frist ist um, oder es kam ein Nein? Hier bekommst du den zweiten Brief – und erfährst, wer dir danach hilft. Deine Angaben aus Schritt 2 werden übernommen.</p>
+    <div class="card">
+      <form id="fuForm" novalidate>
+        <div class="f" style="margin-top:0;font-weight:600" data-i18n="fuTo">An wen ging dein erster Brief?</div>
+        <div class="seg">
+          <label><input type="radio" name="futo" value="seller" checked><span data-i18n="fuSeller">An den Verkäufer (Gewährleistung)</span></label>
+          <label><input type="radio" name="futo" value="maker"><span data-i18n="fuMaker">An den Hersteller (§ 479b BGB)</span></label>
+        </div>
+        <div class="f" style="margin-top:14px;font-weight:600" data-i18n="fuWhat">Was ist passiert?</div>
+        <div class="seg">
+          <label><input type="radio" name="fuwhat" value="noreply" checked><span data-i18n="fuNo">Keine Antwort bis zur Frist</span></label>
+          <label><input type="radio" name="fuwhat" value="refused"><span data-i18n="fuRef">Sie haben abgelehnt</span></label>
+          <label><input type="radio" name="fuwhat" value="failed"><span id="fuFailLbl">Repariert – aber der Fehler ist noch da</span></label>
+        </div>
+        <div id="fuReasonWrap" class="hidden">
+          <label class="f" for="fuReason" data-i18n="fuReason">Welchen Grund haben sie genannt? (optional)</label>
+          <input type="text" id="fuReason" maxlength="200">
+        </div>
+        <div class="two">
+          <div>
+            <label class="f" for="fuDate" data-i18n="fuDate">Datum deines ersten Briefs</label>
+            <input type="date" id="fuDate">
+          </div>
+          <div>
+            <label class="f" for="fuDays" data-i18n="fuDays">Letzte Frist</label>
+            <select id="fuDays">
+              <option value="10" selected>10</option>
+              <option value="14">14</option>
+              <option value="7">7</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn primary" type="submit" data-i18n="fuBtn">Zweiten Brief erstellen</button>
+      </form>
+
+      <div class="out hidden" id="fuOut">
+        <label class="f" for="fuText" data-i18n="fuOut">Dein zweiter Brief (du kannst ihn hier noch ändern)</label>
+        <textarea id="fuText" spellcheck="false"></textarea>
+        <div class="btnrow" data-for="fuText">
+          <button class="btn ghost" type="button" data-act="copy" data-i18n="bCopy">Kopieren</button>
+          <a class="btn ghost" href="#" data-act="mail" data-i18n="bMail">Als E-Mail öffnen</a>
+          <button class="btn ghost" type="button" data-act="print" data-i18n="bPrint">Drucken / PDF</button>
+          <button class="btn ghost" type="button" data-act="down" data-i18n="bDown">Als Datei speichern</button>
+          <button class="btn ghost wide" type="button" data-act="cal" data-i18n="bCal">📅 Frist in meinen Kalender</button>
+        </div>
+        <div class="res info explain" id="fuExplain"></div>
+      </div>
+    </div>
+  </section>
+
   <!-- 3. WHERE -->
   <section class="block" id="where">
-    <h2 data-i18n="whereTitle">3 · Wo reparieren?</h2>
+    <h2 data-i18n="whereTitle">4 · Wo reparieren?</h2>
     <p class="lead" data-i18n="whereLead">Kein Anspruch gegen Händler oder Hersteller – oder zu teuer? Diese Wege sind oft günstiger.</p>
 
     <div class="two">
@@ -298,15 +379,17 @@ footer li{margin:4px 0}
 <footer>
   <div class="wrap">
     <p class="disclaimer"><strong data-i18n="discT">Keine Rechtsberatung.</strong> <span data-i18n="discB">Secondwind erklärt die Rechtslage allgemein und vereinfacht (Stand 23.11.2026). Im Einzelfall kann es anders sein. Für eine persönliche Beratung wende dich an die Verbraucherzentrale.</span> <a href="https://www.verbraucherzentrale.de/" target="_blank" rel="noopener">verbraucherzentrale.de</a></p>
-    <p data-i18n="privacy">Datenschutz: Diese Seite speichert und sendet keine Daten. Alles, was du eingibst, bleibt in deinem Browser.</p>
+    <p data-i18n="privacy">Datenschutz: Diese Seite speichert keine Daten, setzt keine Cookies und hat kein Tracking. Alles, was du eingibst, bleibt in deinem Browser. Einzige Ausnahme: Tippst du „Auf Deutsch formulieren lassen“, wird nur der Problem-Text einmal an unseren Übersetzungsdienst (Cloudflare Workers AI) geschickt und nicht gespeichert.</p>
 
     <h3 data-i18n="srcT">Quellen</h3>
     <ol>
       <li><a href="https://eur-lex.europa.eu/eli/dir/2024/1799/oj" target="_blank" rel="noopener">Richtlinie (EU) 2024/1799</a> – Art. 5 (Reparaturpflicht), Art. 16 (+12 Monate), Anhang II</li>
       <li><a href="https://eur-lex.europa.eu/eli/dir_del/2026/74/oj" target="_blank" rel="noopener">Delegierte Richtlinie (EU) 2026/74</a> – Einzelraumheizgeräte in Anhang II</li>
       <li><a href="https://commission.europa.eu/law/law-topic/consumer-protection-law/directive-repair-goods_en" target="_blank" rel="noopener">EU-Kommission: Directive on repair of goods</a></li>
-      <li>BGB: <a href="https://www.gesetze-im-internet.de/bgb/__479a.html" target="_blank" rel="noopener">§ 479a</a>, <a href="https://www.gesetze-im-internet.de/bgb/__479b.html" target="_blank" rel="noopener">§ 479b</a>, <a href="https://www.gesetze-im-internet.de/bgb/__475e.html" target="_blank" rel="noopener">§ 475e</a>, <a href="https://www.gesetze-im-internet.de/bgb/__439.html" target="_blank" rel="noopener">§ 439</a>, <a href="https://www.gesetze-im-internet.de/bgb/__477.html" target="_blank" rel="noopener">§ 477</a></li>
+      <li>BGB: <a href="https://www.gesetze-im-internet.de/bgb/__479a.html" target="_blank" rel="noopener">§ 479a</a>, <a href="https://www.gesetze-im-internet.de/bgb/__479b.html" target="_blank" rel="noopener">§ 479b</a>, <a href="https://www.gesetze-im-internet.de/bgb/__475e.html" target="_blank" rel="noopener">§ 475e</a>, <a href="https://www.gesetze-im-internet.de/bgb/__439.html" target="_blank" rel="noopener">§ 439</a>, <a href="https://www.gesetze-im-internet.de/bgb/__477.html" target="_blank" rel="noopener">§ 477</a>, <a href="https://www.gesetze-im-internet.de/bgb/__438.html" target="_blank" rel="noopener">§ 438</a>, <a href="https://www.gesetze-im-internet.de/bgb/__475d.html" target="_blank" rel="noopener">§ 475d</a>, <a href="https://www.gesetze-im-internet.de/bgb/__635.html" target="_blank" rel="noopener">§§ 635</a>, <a href="https://www.gesetze-im-internet.de/bgb/__637.html" target="_blank" rel="noopener">637</a></li>
       <li><a href="https://www.verbraucherzentrale.de/wissen/vertraege-reklamation/kundenrechte/recht-auf-reparatur-mehr-rechte-seit-31-juli-2026-124253" target="_blank" rel="noopener">Verbraucherzentrale: Recht auf Reparatur – mehr Rechte seit 31. Juli 2026</a></li>
+      <li><a href="https://www.evz.de/" target="_blank" rel="noopener">Europäisches Verbraucherzentrum Deutschland</a> · <a href="https://www.verbraucher-schlichter.de/" target="_blank" rel="noopener">Universalschlichtungsstelle des Bundes</a> · <a href="https://www.bundesregierung.de/breg-de/aktuelles/verbraucherschlichtung-1711026" target="_blank" rel="noopener">Bundesregierung: Verbraucherschlichtung</a></li>
+      <li><span data-i18n="srcBrands">Hersteller-Adressen: aus dem Impressum bzw. den Rechtstexten der offiziellen Hersteller-Websites, geprüft am 23.11.2026 (Quelle steht bei jeder Marke).</span></li>
       <li><a href="https://www.sab.sachsen.de/reparaturbonus" target="_blank" rel="noopener">SAB Reparaturbonus Sachsen</a> · <a href="https://www.ibb-business-team.de/reparaturbonus/" target="_blank" rel="noopener">IBB ReparaturBONUS Berlin</a> · <a href="https://www.vzth.de/reparaturbonus" target="_blank" rel="noopener">VZ Thüringen</a></li>
     </ol>
     <p style="margin-top:18px">Secondwind · <span data-i18n="tagline">Your stuff deserves a second wind.</span></p>
@@ -314,100 +397,168 @@ footer li{margin:4px 0}
 </footer>
 
 <div class="toast" id="toast" role="status"></div>
+<div id="printLetter"></div>
 
 <script>
+/* ============ Config ============ */
+// Translation backend (Cloudflare Worker in /worker). Set to '' to hide the feature.
+const WORKER_URL = 'https://secondwind.dhanushreddy200293.workers.dev';
+const LEGAL_STAND = '23.11.2026';
+
 /* ============ Content ============ */
 const TODAY = new Date();
-const CUTOFF = new Date('2026-07-31'); // new rules apply to contracts from this date
+const parseDate = v => { if(!v) return null; const d=new Date(v+'T12:00:00'); return isNaN(d)?null:d; };
+const CUTOFF = parseDate('2026-07-31'); // new rules apply to contracts from this date
 
-// Device groups. scope: date from which the model is covered by EU spare-part rules (approx. by purchase date)
+// Device groups. since: models placed on the market from this date are covered by EU spare-part rules
 const DEVICES = [
   {id:'washer', g:'A', since:'2021-03-01', de:'Waschmaschine / Waschtrockner', en:'Washing machine / washer-dryer', deL:'Waschmaschine', enL:'washing machine'},
   {id:'dish',   g:'A', since:'2021-03-01', de:'Geschirrspüler', en:'Dishwasher', deL:'Geschirrspüler', enL:'dishwasher'},
   {id:'fridge', g:'A', since:'2021-03-01', de:'Kühlschrank / Gefrierschrank', en:'Fridge / freezer', deL:'Kühlschrank', enL:'fridge'},
   {id:'tv',     g:'A', since:'2021-03-01', de:'Fernseher / Monitor', en:'TV / monitor', deL:'Fernseher', enL:'TV'},
-  {id:'dryer',  g:'A', since:null,         de:'Wäschetrockner', en:'Tumble dryer', deL:'Wäschetrockner', enL:'tumble dryer'},
+  {id:'dryer',  g:'A', since:'2025-07-01', de:'Wäschetrockner', en:'Tumble dryer', deL:'Wäschetrockner', enL:'tumble dryer'},
   {id:'phone',  g:'A', since:'2025-06-20', de:'Smartphone', en:'Smartphone', deL:'Smartphone', enL:'smartphone'},
   {id:'tablet', g:'A', since:'2025-06-20', de:'Tablet', en:'Tablet', deL:'Tablet', enL:'tablet'},
   {id:'cordless',g:'A',since:'2025-06-20', de:'Schnurlostelefon', en:'Cordless phone', deL:'Schnurlostelefon', enL:'cordless phone'},
-  {id:'heater', g:'H', since:null,         de:'Elektrisches Heizgerät (Einzelraum)', en:'Electric room heater', deL:'Heizgerät', enL:'room heater'},
+  {id:'heater', g:'H', since:'2025-07-01', de:'Elektrisches Heizgerät (Einzelraum)', en:'Electric room heater', deL:'Heizgerät', enL:'room heater'},
   {id:'vacuum', g:'L', since:null,         de:'Staubsauger', en:'Vacuum cleaner', deL:'Staubsauger', enL:'vacuum cleaner'},
   {id:'ebike',  g:'L', since:null,         de:'E-Bike / E-Scooter (Akku)', en:'E-bike / e-scooter (battery)', deL:'E-Bike', enL:'e-bike'},
   {id:'other',  g:'N', since:null,         de:'Etwas anderes (Laptop, Kaffeemaschine, Kopfhörer …)', en:'Something else (laptop, coffee machine, headphones …)', deL:'Gerät', enL:'device'}
+];
+
+// Hand-checked manufacturer addresses (official websites, checked 23 Nov 2026). See claude/brands-v2.md in the project.
+const BRAND_CHECKED = '23.11.2026';
+const BSH = 'BSH Hausgeräte GmbH\nCarl-Wery-Straße 34\n81739 München';
+const WG = ['washer','dish','fridge','dryer'];
+const BRANDS = [
+  {id:'aeg', name:'AEG', dev:[...WG,'vacuum'], addr:'AEG Electrolux Hausgeräte GmbH\nFürther Straße 246\n90429 Nürnberg', repair:'https://www.aeg.de/support/reparatur/', src:'https://www.aeg.de/support/impressum/'},
+  {id:'apple', name:'Apple', dev:['phone','tablet'], addr:'Apple Distribution International Ltd.\nHollyhill Industrial Estate\nHollyhill, Cork\nIRLAND', repair:'https://support.apple.com/de-de/repair', src:'https://www.apple.com/de/contact/'},
+  {id:'beko', name:'Beko', dev:WG, addr:'Beko Germany GmbH\nRahmannstraße 3\n65760 Eschborn', repair:'https://www.beko.com/de-de/service/reparatur-terminbuchung', src:'https://www.beko.com/de-de/impressum'},
+  {id:'bosch', name:'Bosch', dev:[...WG,'vacuum'], addr:BSH, repair:'https://www.bosch-home.com/de/service/reparaturservice/grosse-hausgeraete', src:'https://www.bosch-home.com/de/metaseiten/impressum'},
+  {id:'fairphone', name:'Fairphone', dev:['phone'], addr:'Fairphone B.V.\nVan Diemenstraat 200\n1013 CP Amsterdam\nNIEDERLANDE', repair:'https://support.fairphone.com/', src:'https://www.fairphone.com/de/legal/impressum'},
+  {id:'google', name:'Google Pixel', dev:['phone','tablet'], addr:'Google Commerce Limited\nGordon House, Barrow Street\nDublin 4\nIRLAND', repair:'https://support.google.com/pixelphone/', src:'https://store.google.com/intl/de-DE_de/about/device-terms.html'},
+  {id:'haier', name:'Haier', dev:[...WG,'vacuum'], addr:'Haier Germany GmbH\nKonrad-Zuse-Platz 6\n81829 München', repair:'https://www.haier-europe.com/de_DE/kundendienst/', src:'https://www.haier-europe.com/de_DE/impressum/'},
+  {id:'lg', name:'LG', dev:[...WG,'tv'], addr:'LG Electronics Deutschland GmbH\nAlfred-Herrhausen-Allee 3-5\n65760 Eschborn', repair:'https://www.lg.com/de/support', src:'https://www.lg.com/de/impressum/'},
+  {id:'liebherr', name:'Liebherr', dev:['fridge'], addr:'Liebherr-Hausgeräte Ochsenhausen GmbH\nMemminger Straße 77-79\n88416 Ochsenhausen', repair:'https://www.liebherr.com/de-de/gefrier-kuehlschraenke/reparaturinformationen-9427574', src:'https://www.liebherr.com/de-de/firmengruppe/standort/ochsenhausen-profil-3705427'},
+  {id:'miele', name:'Miele', dev:[...WG,'vacuum'], addr:'Miele Vertriebsgesellschaft Deutschland KG\nCarl-Miele-Straße 29\n33332 Gütersloh', repair:'https://www.miele.de/cs/service/recht-auf-reparatur-22', src:'https://www.miele.de/impressum'},
+  {id:'neff', name:'Neff', dev:['dish','fridge','washer'], addr:BSH, repair:'https://www.neff-home.com/de/service/reparaturservice/reparaturpreise', src:'https://www.neff-home.com/de/impressum'},
+  {id:'panasonic', name:'Panasonic', dev:['tv'], addr:'Panasonic Marketing Europe GmbH\nPanasonic Deutschland\nWinsbergring 15\n22525 Hamburg', repair:'https://support-de.panasonic.eu/', src:'https://www.panasonic.com/de/impressum.html'},
+  {id:'philips', name:'Philips (TV)', dev:['tv'], addr:'TP Vision Europe B.V.\nPrins Bernhardplein 200\n1097 JB Amsterdam\nNIEDERLANDE', repair:'https://www.philips.de/c-w/support-home/service-und-reparatur', src:'https://www.documents.philips.com/assets/EU%20Declaration%20of%20conformity/20260303/bd03d596b8f246438483b402008c9fb0.pdf'},
+  {id:'samsung', name:'Samsung', dev:[...WG,'tv','phone','tablet','vacuum'], addr:'Samsung Electronics GmbH\nFrankfurter Straße 2\n65760 Eschborn', repair:'https://www.samsung.com/de/support/reparatur', src:'https://www.samsung.com/de/info/imprint/'},
+  {id:'siemens', name:'Siemens', dev:[...WG,'vacuum'], addr:BSH, repair:'https://www.siemens-home.bsh-group.com/de/kundendienst/reparatur/reparaturservice-grosse-hausgeraete', src:'https://www.siemens-home.bsh-group.com/de/impressum'},
+  {id:'sony', name:'Sony', dev:['tv','phone'], addr:'Sony Europe B.V.\nZweigniederlassung Deutschland\nKemperplatz 1\n10785 Berlin', repair:'https://www.sony.de/', src:'https://campaign.odw.sony-europe.com/redemption/terms/AT_DI_Student_Cashback_terms_and_conditions_2026.pdf'},
+  {id:'xiaomi', name:'Xiaomi', dev:['phone','tablet','vacuum'], addr:'Xiaomi Technology Germany GmbH\nNiederkasseler Lohweg 175\n40547 Düsseldorf', repair:'https://www.mi.com/de/support/', src:'https://www.mi.com/de/service/support/impressum.html'}
 ];
 
 const T = {
 de:{
   heroTitle:'Reparieren statt wegwerfen. Mit Recht.',
   heroSub:'Gerät kaputt? In 2 Minuten erfährst du, wer es reparieren muss – und bekommst den fertigen Brief dazu. Kostenlos, ohne Anmeldung.',
-  nav1:'Rechte prüfen', nav2:'Brief erstellen', nav3:'Wo reparieren?',
-  checkTitle:'1 · Kann ich das reparieren lassen?', checkLead:'Drei Fragen. Deine Angaben bleiben auf deinem Gerät.',
-  qDevice:'Was ist kaputt?', qDate:'Wann hast du es gekauft?', qDateHint:'Datum auf Rechnung oder Bestellbestätigung. Ungefähr reicht.',
+  nav1:'Rechte prüfen', nav2:'Brief erstellen', nav3f:'Keine Antwort? Nachfassen', nav3:'Wo reparieren?',
+  checkTitle:'1 · Kann ich das reparieren lassen?', checkLead:'Vier Fragen. Deine Angaben bleiben auf deinem Gerät.',
+  qDevice:'Was ist kaputt?', qDate:'Wann hast du es gekauft?', qDateHint:'Datum auf Rechnung oder Lieferschein. Die 2 Jahre Gewährleistung zählen ab Lieferung.',
   qWhere:'Wo hast du es gekauft?', wBiz:'Bei einem Händler (Laden oder Online-Shop)', wPriv:'Von Privat (z. B. Kleinanzeigen) oder geschenkt',
   qCause:'Wie ist es kaputtgegangen?', cSelf:'Einfach so – es funktioniert nicht mehr richtig', cMe:'Durch mich (runtergefallen, Wasser …)',
   checkBtn:'Meine Rechte anzeigen', pickDevice:'Bitte wählen …', needDate:'Bitte gib das Kaufdatum an.', futureDate:'Das Datum liegt in der Zukunft.',
   letterTitle:'2 · Brief erstellen', letterLead:'Fülle die Felder aus. Der Brief ist auf Deutsch, damit Händler und Hersteller ihn sofort verstehen. Die Erklärung bekommst du in deiner Sprache.',
   lTo:'An wen schreibst du?', lSeller:'An den Verkäufer – Gewährleistung (kostenlose Reparatur in den ersten 2 Jahren)', lMaker:'An den Hersteller – Recht auf Reparatur (§ 479b BGB, gegen angemessenen Preis)',
   lName:'Dein Name', lAddr:'Deine Adresse', lMail:'Deine E-Mail oder Telefon (optional)', lRecip:'Empfänger (Firma und Adresse)',
+  lBrand:'Marke – füllt die Hersteller-Adresse aus', brandPick:'Marke wählen …', brandOther:'Andere Marke / nicht in der Liste',
+  brandSrc:'Adresse von der offiziellen Website', brandChecked:'geprüft am', brandRepair:'Reparatur-Seite & Preise',
+  brandTip:'Tipp: Viele Hersteller haben auch ein Online-Formular – schick den Brief dort zusätzlich. Sagt die Firma, ein anderes Unternehmen sei zuständig, lass dir dessen Namen schriftlich nennen.',
+  brandOtherHint:'Adresse selbst eintragen: Hersteller-Website → Impressum oder Kundendienst.',
   lRecipHintSeller:'Steht auf deiner Rechnung oder im Impressum des Shops.', lRecipHintMaker:'Kundendienst-Adresse des Herstellers (Website → Impressum oder Service). Sitzt er außerhalb der EU: an den EU-Bevollmächtigten oder Importeur.',
   lDevice:'Gerät, Marke und Modell', lSerial:'Seriennummer (optional)', lDate:'Kaufdatum', lOrder:'Rechnungs-/Bestellnr. (optional)',
-  lDefect:'Was ist das Problem?', lDefectHint:'Kurz und konkret, gern auf Deutsch. Z. B. „Pumpt kein Wasser ab, Fehlercode E18“.', lSince:'Seit wann? (optional)',
+  lDefect:'Was ist das Problem?', lDefectHint:'Kurz und konkret, gern auf Deutsch. Z. B. „Pumpt kein Wasser ab, Fehlercode E18“.', lDefectHintTr:'Kurz und konkret – in jeder Sprache. Z. B. „Doesn’t pump out water, error E18“.', lSince:'Seit wann? (optional)',
+  bTr:'Auf Deutsch formulieren lassen', trNote:'Schreib in deiner Sprache. Der Text wird dafür einmal an unseren Übersetzungsdienst (Cloudflare) geschickt und nicht gespeichert. Bitte keine Namen oder Adressen hineinschreiben.',
+  trProposal:'Vorschlag auf Deutsch – bitte prüfen. Stimmt alles?', trEditHint:'Du kannst den Text hier noch ändern. Erst „Übernehmen“ setzt ihn in den Brief.', bTrUse:'Übernehmen', bTrDrop:'Verwerfen',
+  trBusy:'Einen Moment …', trDone:'Übernommen ✓',
+  trErr_empty:'Bitte beschreib das Problem zuerst kurz (mindestens ein paar Wörter).', trErr_too_long:'Bitte kürzer (höchstens 500 Zeichen).',
+  trErr_off_topic:'Das sieht nicht nach einer Fehlerbeschreibung aus. Beschreib bitte, was am Gerät nicht funktioniert.',
+  trErr_rate_limited:'Zu viele Anfragen in kurzer Zeit. Bitte warte eine Minute.',
+  trErr_unavailable:'Die Übersetzung ist gerade nicht erreichbar. Schreib das Problem kurz selbst – Englisch geht zur Not auch.',
   lPrev:'Das Gerät wurde schon einmal von jemand anderem repariert', lCity:'Dein Ort (für Datum oben)', lDays:'Antwortfrist', days:'Tage',
-  lBtn:'Brief erstellen', lOut:'Dein Brief (du kannst ihn hier noch ändern)', bCopy:'Kopieren', bMail:'Als E-Mail öffnen', bPrint:'Drucken / PDF', bDown:'Als Datei speichern',
-  copied:'Kopiert ✓', needFields:'Bitte fülle Name, Gerät und Problem aus.',
+  lBtn:'Brief erstellen', lOut:'Dein Brief (du kannst ihn hier noch ändern)', bCopy:'Kopieren', bMail:'Als E-Mail öffnen', bPrint:'Drucken / PDF', bDown:'Als Datei speichern', bCal:'📅 Frist in meinen Kalender',
+  copied:'Kopiert ✓', needFields:'Bitte fülle Name, Gerät und Problem aus.', needFieldsFu:'Für den zweiten Brief brauchen wir oben in Schritt 2 deinen Namen und das Gerät.',
   phAddr:'Musterstraße 1\n85049 Ingolstadt', phDevice:'z. B. Waschmaschine Bosch WGG14403',
-  whereTitle:'3 · Wo reparieren?', whereLead:'Kein Anspruch gegen Händler oder Hersteller – oder zu teuer? Diese Wege sind oft günstiger.',
+  fuTitle:'3 · Keine Antwort oder abgelehnt?', fuLead:'Die Frist ist um, oder es kam ein Nein? Hier bekommst du den zweiten Brief – und erfährst, wer dir danach hilft. Deine Angaben aus Schritt 2 werden übernommen.',
+  fuTo:'An wen ging dein erster Brief?', fuSeller:'An den Verkäufer (Gewährleistung)', fuMaker:'An den Hersteller (§ 479b BGB)',
+  fuWhat:'Was ist passiert?', fuNo:'Keine Antwort bis zur Frist', fuRef:'Sie haben abgelehnt', fuFailSeller:'Repariert – aber der Fehler ist noch da', fuFailMaker:'Kostenpflichtig repariert – aber der Fehler ist noch da',
+  fuReason:'Welchen Grund haben sie genannt? (optional)', fuDate:'Datum deines ersten Briefs', fuDays:'Letzte Frist', fuBtn:'Zweiten Brief erstellen', fuOut:'Dein zweiter Brief (du kannst ihn hier noch ändern)',
+  calTitle:'Secondwind: Frist abgelaufen – Antwort da?', calDesc:'Keine Antwort oder Ablehnung? Zweiten Brief erstellen:',
+  whereTitle:'4 · Wo reparieren?', whereLead:'Kein Anspruch gegen Händler oder Hersteller – oder zu teuer? Diese Wege sind oft günstiger.',
   rc1:'Repair-Café in deiner Nähe', rc1s:'Karte mit Terminen – Netzwerk Reparatur-Initiativen', rc2:'Repair Café International', rc2s:'Weitere Repair Cafés weltweit, auch in Deutschland',
   rc3:'Selbst reparieren', rc3s:'Kostenlose Anleitungen auf iFixit', rc4:'Im EU-Ausland gekauft?', rc4s:'Europäisches Verbraucherzentrum Deutschland hilft kostenlos',
   bonusTitle:'Reparaturbonus – Zuschuss vom Staat', bonusLead:'Einen bundesweiten Bonus gibt es nicht. Nur wer dort wohnt, kann ihn beantragen.',
   thWhere:'Wo', thWhat:'Was', thStatus:'Status',
-  bSax:'50 % der Kosten, max. 200 € pro Reparatur, Rechnung ab 115 €, bis zu 2 Reparaturen pro Jahr, nur bei teilnehmenden Betrieben.', bSaxNote:'Antragspause ab 2.12.2026, Neustart geplant 11.1.2027',
+  bSax:'50 % der Kosten, max. 200 € pro Reparatur, Rechnung ab 115 €, bis zu 2 Reparaturen pro Jahr, nur bei teilnehmenden Betrieben.', bSaxNote:'Anträge bis 1.12.2026; Pause ab 2.12.2026, Neustart geplant 11.1.2027',
   bBer:'50 % der Kosten, max. 200 €; im Repair-Café 100 % der Ersatzteile bis 200 €.', bBerNote:'Mittel aufgebraucht, keine neuen Anträge seit 25.6.2025',
   bThu:'Früher 50 % bis 100 € pro Jahr.', bThuNote:'Ende 2025 eingestellt',
   stOpen:'Offen', stPause:'Pausiert', stEnded:'Beendet',
   bonusStand:'Stand: 23.11.2026. Einzelne Städte und Landkreise haben eigene Programme – frag bei deiner Stadt oder der Verbraucherzentrale nach.',
   discT:'Keine Rechtsberatung.', discB:'Secondwind erklärt die Rechtslage allgemein und vereinfacht (Stand 23.11.2026). Im Einzelfall kann es anders sein. Für eine persönliche Beratung wende dich an die Verbraucherzentrale.',
-  privacy:'Datenschutz: Diese Seite speichert und sendet keine Daten. Alles, was du eingibst, bleibt in deinem Browser.',
+  privacy:'Datenschutz: Diese Seite speichert keine Daten, setzt keine Cookies und hat kein Tracking. Alles, was du eingibst, bleibt in deinem Browser. Einzige Ausnahme: Tippst du „Auf Deutsch formulieren lassen“, wird nur der Problem-Text einmal an unseren Übersetzungsdienst (Cloudflare Workers AI) geschickt und nicht gespeichert.',
+  srcBrands:'Hersteller-Adressen: aus dem Impressum bzw. den Rechtstexten der offiziellen Hersteller-Websites, geprüft am 23.11.2026 (Quelle steht bei jeder Marke).',
   srcT:'Quellen', tagline:'Dein Zeug verdient eine zweite Chance.'
 },
 en:{
   heroTitle:'Repair, don’t replace. It’s your right.',
   heroSub:'Something broke? In 2 minutes you’ll know who has to repair it – and get a ready-to-send letter. Free, no sign-up.',
-  nav1:'Check my rights', nav2:'Write the letter', nav3:'Where to repair?',
-  checkTitle:'1 · Can I get this repaired?', checkLead:'Three questions. Your answers stay on your device.',
-  qDevice:'What’s broken?', qDate:'When did you buy it?', qDateHint:'Date on the receipt or order confirmation. Roughly is fine.',
+  nav1:'Check my rights', nav2:'Write the letter', nav3f:'No answer? Follow up', nav3:'Where to repair?',
+  checkTitle:'1 · Can I get this repaired?', checkLead:'Four questions. Your answers stay on your device.',
+  qDevice:'What’s broken?', qDate:'When did you buy it?', qDateHint:'Date on the receipt or delivery note. The 2-year legal warranty starts on delivery.',
   qWhere:'Where did you buy it?', wBiz:'From a business (shop or online store)', wPriv:'From a private person (e.g. Kleinanzeigen) or it was a gift',
   qCause:'How did it break?', cSelf:'On its own – it just stopped working properly', cMe:'I caused it (dropped it, water …)',
   checkBtn:'Show my rights', pickDevice:'Please choose …', needDate:'Please enter the purchase date.', futureDate:'That date is in the future.',
   letterTitle:'2 · Write the letter', letterLead:'Fill in the fields. The letter is in German so shops and manufacturers understand it right away. You get the explanation in your language.',
   lTo:'Who are you writing to?', lSeller:'The seller – legal warranty (free repair in the first 2 years)', lMaker:'The manufacturer – right to repair (§ 479b BGB, for a reasonable price)',
   lName:'Your name', lAddr:'Your address', lMail:'Your email or phone (optional)', lRecip:'Recipient (company and address)',
+  lBrand:'Brand – fills in the manufacturer’s address', brandPick:'Choose brand …', brandOther:'Other brand / not listed',
+  brandSrc:'Address from the official website', brandChecked:'checked on', brandRepair:'Repair page & prices',
+  brandTip:'Tip: many manufacturers also have an online form – send the letter there too. If the company says another company is responsible, ask them to name it in writing.',
+  brandOtherHint:'Enter the address yourself: manufacturer’s website → Impressum or customer service.',
   lRecipHintSeller:'It’s on your receipt or in the shop’s “Impressum”.', lRecipHintMaker:'The manufacturer’s customer service address (website → Impressum or Service). If it’s based outside the EU: write to its EU representative or the importer.',
   lDevice:'Device, brand and model', lSerial:'Serial number (optional)', lDate:'Purchase date', lOrder:'Invoice/order no. (optional)',
-  lDefect:'What’s the problem?', lDefectHint:'Short and specific – German is best, English is OK. E.g. “Doesn’t pump out water, error code E18”.', lSince:'Since when? (optional)',
+  lDefect:'What’s the problem?', lDefectHint:'Short and specific – German is best, English is OK. E.g. “Doesn’t pump out water, error code E18”.', lDefectHintTr:'Short and specific – in any language. E.g. “Doesn’t pump out water, error E18”.', lSince:'Since when? (optional)',
+  bTr:'Turn it into German', trNote:'Write in your language. The text is sent once to our translation service (Cloudflare) for this and is not stored. Please don’t include names or addresses.',
+  trProposal:'Suggested German text – please check. Is it correct?', trEditHint:'You can still edit it here. Only “Use this” puts it into the letter.', bTrUse:'Use this', bTrDrop:'Discard',
+  trBusy:'One moment …', trDone:'Added ✓',
+  trErr_empty:'Please describe the problem first (at least a few words).', trErr_too_long:'Please keep it shorter (max. 500 characters).',
+  trErr_off_topic:'That doesn’t look like a description of a fault. Please describe what doesn’t work on the device.',
+  trErr_rate_limited:'Too many requests in a short time. Please wait a minute.',
+  trErr_unavailable:'Translation isn’t available right now. Please write the problem yourself – English is OK if needed.',
   lPrev:'Someone else has repaired the device before', lCity:'Your town (for the date line)', lDays:'Deadline for reply', days:'days',
-  lBtn:'Create letter', lOut:'Your letter (you can still edit it here)', bCopy:'Copy', bMail:'Open as email', bPrint:'Print / PDF', bDown:'Save as file',
-  copied:'Copied ✓', needFields:'Please fill in name, device and problem.',
+  lBtn:'Create letter', lOut:'Your letter (you can still edit it here)', bCopy:'Copy', bMail:'Open as email', bPrint:'Print / PDF', bDown:'Save as file', bCal:'📅 Add deadline to my calendar',
+  copied:'Copied ✓', needFields:'Please fill in name, device and problem.', needFieldsFu:'For the second letter we need your name and the device in step 2 above.',
   phAddr:'Musterstraße 1\n85049 Ingolstadt', phDevice:'e.g. washing machine Bosch WGG14403',
-  whereTitle:'3 · Where to repair?', whereLead:'No claim against the seller or manufacturer – or too expensive? These options are often cheaper.',
+  fuTitle:'3 · No answer or refused?', fuLead:'The deadline has passed, or they said no? Get the second letter here – and see who can help you next. Your details from step 2 are reused.',
+  fuTo:'Who did your first letter go to?', fuSeller:'The seller (legal warranty)', fuMaker:'The manufacturer (§ 479b BGB)',
+  fuWhat:'What happened?', fuNo:'No answer by the deadline', fuRef:'They refused', fuFailSeller:'They repaired it – but the fault is still there', fuFailMaker:'Paid repair done – but the fault is still there',
+  fuReason:'What reason did they give? (optional)', fuDate:'Date of your first letter', fuDays:'Final deadline', fuBtn:'Create second letter', fuOut:'Your second letter (you can still edit it here)',
+  calTitle:'Secondwind: deadline passed – did they answer?', calDesc:'No answer or refused? Create the second letter:',
+  whereTitle:'4 · Where to repair?', whereLead:'No claim against the seller or manufacturer – or too expensive? These options are often cheaper.',
   rc1:'Repair café near you', rc1s:'Map with dates – Netzwerk Reparatur-Initiativen', rc2:'Repair Café International', rc2s:'More repair cafés worldwide, including Germany',
   rc3:'Fix it yourself', rc3s:'Free repair guides on iFixit', rc4:'Bought in another EU country?', rc4s:'European Consumer Centre Germany helps for free',
   bonusTitle:'Repair bonus – money back from the state', bonusLead:'There is no nationwide bonus. Only residents of the state can apply.',
   thWhere:'Where', thWhat:'What', thStatus:'Status',
-  bSax:'50% of the cost, max. €200 per repair, invoice from €115, up to 2 repairs per year, only at participating repair shops.', bSaxNote:'No applications from 2 Dec 2026, restart planned 11 Jan 2027',
+  bSax:'50% of the cost, max. €200 per repair, invoice from €115, up to 2 repairs per year, only at participating repair shops.', bSaxNote:'Apply by 1 Dec 2026; paused from 2 Dec 2026, restart planned 11 Jan 2027',
   bBer:'50% of the cost, max. €200; at a repair café 100% of spare parts up to €200.', bBerNote:'Funds used up, no new applications since 25 Jun 2025',
   bThu:'Used to pay 50% up to €100 per year.', bThuNote:'Ended at the end of 2025',
   stOpen:'Open', stPause:'Paused', stEnded:'Ended',
   bonusStand:'As of 23 Nov 2026. Some cities and districts run their own schemes – ask your city or the Verbraucherzentrale.',
   discT:'Not legal advice.', discB:'Secondwind explains the law in general, simplified terms (as of 23 Nov 2026). Your case may differ. For personal advice, contact the Verbraucherzentrale (consumer advice centre).',
-  privacy:'Privacy: this page stores and sends no data. Everything you type stays in your browser.',
+  privacy:'Privacy: this page stores no data, sets no cookies and has no tracking. Everything you type stays in your browser. Only exception: if you tap “Turn it into German”, just the problem text is sent once to our translation service (Cloudflare Workers AI) and is not stored.',
+  srcBrands:'Manufacturer addresses: from the Impressum or legal pages of the official manufacturer websites, checked on 23 Nov 2026 (source shown for each brand).',
   srcT:'Sources', tagline:'Your stuff deserves a second wind.'
 }};
 
 let lang = 'de';
+let chosenDevice = '';
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const t = k => (T[lang][k] ?? T.de[k] ?? k);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const radio = n => document.querySelector(`input[name=${n}]:checked`).value;
 
 function applyLang(l){
   lang = l;
@@ -416,10 +567,15 @@ function applyLang(l){
   $$('[data-i18n-ph]').forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
   $$('.lang button').forEach(b => b.setAttribute('aria-pressed', b.dataset.lang === l));
   fillDevices();
+  fillBrands();
   updateRecipHint();
+  updateFuLabels();
+  $('#lDefect').closest('form').querySelector('[data-i18n="lDefectHint"]').textContent = t(WORKER_URL ? 'lDefectHintTr' : 'lDefectHint');
   if ($('#result').dataset.shown) runCheck();
   if (!$('#out').classList.contains('hidden')) renderExplain();
+  if (!$('#fuOut').classList.contains('hidden')) renderFuExplain();
   $('#lDays').querySelectorAll('option').forEach(o => o.textContent = o.value + ' ' + t('days'));
+  $('#fuDays').querySelectorAll('option').forEach(o => o.textContent = o.value + ' ' + t('days'));
 }
 
 function fillDevices(){
@@ -432,9 +588,15 @@ function fillDevices(){
 /* ============ Helpers ============ */
 const fmtDE = d => d ? d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}) : '';
 const fmtL  = d => d ? d.toLocaleDateString(lang==='de'?'de-DE':'en-GB',{day:'numeric',month:'long',year:'numeric'}) : '';
+const ymd = d => d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate();
 function monthsBetween(a,b){ return (b.getFullYear()-a.getFullYear())*12 + (b.getMonth()-a.getMonth()) - (b.getDate()<a.getDate()?1:0); }
-function addMonths(d,m){ const x=new Date(d); x.setMonth(x.getMonth()+m); return x; }
-function parseDate(v){ if(!v) return null; const d=new Date(v+'T12:00:00'); return isNaN(d)?null:d; }
+// Same day N months later; if that day doesn't exist, the last day of that month (§ 188 Abs. 3 BGB)
+function addMonths(d,m){
+  const x = new Date(d.getFullYear(), d.getMonth()+m, 1, 12);
+  const last = new Date(x.getFullYear(), x.getMonth()+1, 0).getDate();
+  x.setDate(Math.min(d.getDate(), last)); return x;
+}
+function addDays(d,n){ const x=new Date(d); x.setDate(x.getDate()+n); return x; }
 function toast(msg){ const el=$('#toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>el.classList.remove('show'),1800); }
 
 /* ============ Checker ============ */
@@ -445,18 +607,22 @@ function card(kind, tag, title, html, cta){
 function runCheck(){
   const dev = DEVICES.find(d => d.id === $('#device').value);
   const pd = parseDate($('#pdate').value);
-  const where = document.querySelector('input[name=where]:checked').value;
-  const cause = document.querySelector('input[name=cause]:checked').value;
+  const where = radio('where');
+  const cause = radio('cause');
   const out = $('#result');
   if(!dev){ out.innerHTML = `<div class="res warn">${t('pickDevice')}</div>`; return; }
   if(!pd){ out.innerHTML = `<div class="res warn">${t('needDate')}</div>`; return; }
-  if(pd > TODAY){ out.innerHTML = `<div class="res warn">${t('futureDate')}</div>`; return; }
+  if(ymd(pd) > ymd(TODAY)){ out.innerHTML = `<div class="res warn">${t('futureDate')}</div>`; return; }
   out.dataset.shown = '1';
+  chosenDevice = dev.id;
+  fillBrands();
 
   const age = monthsBetween(pd, TODAY);
   const newRules = pd >= CUTOFF;
   const warrantyEnd = addMonths(pd, 24);
-  const underWarranty = where === 'biz' && age < 24;
+  const inTime = ymd(TODAY) <= ymd(warrantyEnd);
+  const lastDay = ymd(TODAY) === ymd(warrantyEnd);
+  const underWarranty = where === 'biz' && inTime;
   const warrantyUsable = underWarranty && cause === 'self';
   const inAnnex = ['A','H','L'].includes(dev.g);
   const de = lang === 'de';
@@ -474,10 +640,14 @@ function runCheck(){
             : `<li><strong>Bonus:</strong> If you choose repair instead of a replacement, your warranty is extended once by 12 months (§ 475e Abs. 5 BGB).</li>`)
       : (de ? `<li>Die Verlängerung um 12 Monate bei Reparatur gilt erst für Käufe ab 31.07.2026 – für deinen Kauf noch nicht.</li>`
             : `<li>The 12-month extension for choosing repair only applies to purchases from 31 July 2026 – not yet to yours.</li>`);
+    const urgent = lastDay
+      ? (de ? `<p class="urgent"><strong>Heute ist der letzte Tag der 2 Jahre.</strong> Melde den Mangel heute noch schriftlich – und lass dich am besten sofort bei der Verbraucherzentrale beraten: Ein Brief allein hält die Frist nicht in jedem Fall auf.</p>`
+            : `<p class="urgent"><strong>Today is the last day of the 2 years.</strong> Report the defect in writing today – and ideally get advice from the Verbraucherzentrale right away: a letter alone doesn’t always stop the clock.</p>`)
+      : '';
     html += card('ok', de?'Am besten zuerst':'Best first step',
       de?'Der Händler muss kostenlos reparieren (Gewährleistung)':'The seller must repair it for free (legal warranty)',
-      `<ul>
-        <li>${de?`Du hast bis ca. <strong>${fmtL(warrantyEnd)}</strong> Rechte gegen den Händler (2 Jahre ab Kauf, §§ 437, 439 BGB).`:`You have rights against the seller until about <strong>${fmtL(warrantyEnd)}</strong> (2 years from purchase, §§ 437, 439 BGB).`}</li>
+      `${urgent}<ul>
+        <li>${de?`Du hast bis <strong>${fmtL(warrantyEnd)}</strong> Rechte gegen den Händler (2 Jahre ab Lieferung, §§ 437, 438, 439 BGB).`:`You have rights against the seller until <strong>${fmtL(warrantyEnd)}</strong> (2 years from delivery, §§ 437, 438, 439 BGB).`}</li>
         <li>${de?'Du darfst wählen: Reparatur oder neues Gerät. Transport- und Arbeitskosten trägt der Händler.':'You choose: repair or a new device. The seller pays transport and labour.'}</li>
         ${proof}${ext}
         <li>${de?'Gebrauchtware vom Händler: Die Frist kann auf 1 Jahr verkürzt sein – schau in deine Kaufunterlagen.':'Used goods from a business: the period may be cut to 1 year – check your purchase documents.'}</li>
@@ -486,7 +656,7 @@ function runCheck(){
   } else {
     let why;
     if (where !== 'biz') why = de ? 'Beim Kauf von Privat gibt es meist keine Gewährleistung, und für Geschenke hat der Käufer die Rechte.' : 'Private sellers usually exclude the warranty, and for gifts the rights belong to the person who bought it.';
-    else if (age >= 24) why = de ? `Die 2 Jahre Gewährleistung sind seit ca. ${fmtL(warrantyEnd)} vorbei.` : `The 2-year legal warranty ended around ${fmtL(warrantyEnd)}.`;
+    else if (!inTime) why = de ? `Die 2 Jahre Gewährleistung sind seit ${fmtL(warrantyEnd)} vorbei.` : `The 2-year legal warranty ended on ${fmtL(warrantyEnd)}.`;
     else why = de ? 'Selbst verursachte Schäden (Sturz, Wasser) deckt die Gewährleistung nicht ab – sie gilt nur für Fehler, die schon beim Kauf angelegt waren.' : 'Damage you caused (drop, water) isn’t covered by the legal warranty – it only covers faults that were there from the start.';
     html += card('info', de?'Händler':'Seller', de?'Gewährleistung hilft hier wahrscheinlich nicht':'The legal warranty probably won’t help here', `<p>${why}</p>`);
   }
@@ -504,12 +674,9 @@ function runCheck(){
         `<a class="btn ghost" style="width:100%" href="#letter" data-goletter="maker">${de?'Trotzdem beim Hersteller anfragen →':'Ask the manufacturer anyway →'}</a>`);
     } else {
       let scopeNote = '';
-      if (dev.since && pd < new Date(dev.since)){
-        scopeNote = de ? `<p><strong>Achtung:</strong> Die EU-Ersatzteilregeln für diese Geräte gelten für Modelle ab ca. ${fmtDE(new Date(dev.since))}. Dein Gerät ist älter – der Anspruch greift nur, wenn das Modell darunter fällt. Frag den Hersteller trotzdem.</p>`
-                       : `<p><strong>Note:</strong> the EU spare-parts rules for these devices cover models from about ${fmtL(new Date(dev.since))}. Yours is older – the claim only applies if the model is covered. Ask the manufacturer anyway.</p>`;
-      } else if (!dev.since){
-        scopeNote = de ? `<p>Gilt nur für Modelle, die unter die EU-Ökodesign-Regeln für diese Gerätegruppe fallen (eher neuere Modelle). Im Zweifel beim Hersteller nachfragen.</p>`
-                       : `<p>Only for models covered by the EU ecodesign rules for this product group (mostly newer models). If unsure, ask the manufacturer.</p>`;
+      if (dev.since && pd < parseDate(dev.since)){
+        scopeNote = de ? `<p><strong>Achtung:</strong> Die EU-Ersatzteilregeln für diese Geräte gelten für Modelle, die ab ${fmtDE(parseDate(dev.since))} auf den Markt kamen. Dein Gerät ist älter gekauft – der Anspruch greift nur, wenn das Modell darunter fällt. Frag den Hersteller trotzdem.</p>`
+                       : `<p><strong>Note:</strong> the EU spare-parts rules for these devices cover models placed on the market from ${fmtL(parseDate(dev.since))}. You bought yours earlier – the claim only applies if the model is covered. Ask the manufacturer anyway.</p>`;
       }
       html += card('ok', de?'Hersteller':'Manufacturer', de?'Der Hersteller muss reparieren – gegen angemessenen Preis':'The manufacturer must repair it – for a reasonable price',
         `<ul>
@@ -547,20 +714,64 @@ function prefillLetter(type, dev, date){
   if (date && !$('#lDate').value) $('#lDate').value = date;
   onTypeChange();
 }
-function ltype(){ return document.querySelector('input[name=ltype]:checked').value; }
+const ltype = () => radio('ltype');
 function updateRecipHint(){ $('#recipHint').textContent = t(ltype()==='seller' ? 'lRecipHintSeller' : 'lRecipHintMaker'); }
-function onTypeChange(){ $('#makerExtras').classList.toggle('hidden', ltype() !== 'maker'); updateRecipHint(); }
+function onTypeChange(){
+  const maker = ltype() === 'maker';
+  $('#makerExtras').classList.toggle('hidden', !maker);
+  $('#brandWrap').classList.toggle('hidden', !maker);
+  updateRecipHint();
+}
+
+function fillBrands(){
+  const sel = $('#lBrand'); const cur = sel.value;
+  const list = BRANDS.filter(b => !chosenDevice || chosenDevice === 'other' || b.dev.includes(chosenDevice));
+  const shown = list.length ? list : BRANDS;
+  sel.innerHTML = `<option value="">${t('brandPick')}</option>` +
+    shown.map(b => `<option value="${b.id}">${esc(b.name)}</option>`).join('') +
+    `<option value="_other">${t('brandOther')}</option>`;
+  sel.value = shown.some(b => b.id === cur) || cur === '_other' ? cur : '';
+  renderBrandInfo();
+}
+function renderBrandInfo(){
+  const id = $('#lBrand').value; const info = $('#brandInfo');
+  if (!id){ info.innerHTML = ''; return; }
+  if (id === '_other'){ info.textContent = t('brandOtherHint'); return; }
+  const b = BRANDS.find(x => x.id === id);
+  info.innerHTML = `${t('brandSrc')} (<a href="${b.src}" target="_blank" rel="noopener">${lang==='de'?'Quelle':'source'} ↗</a>), ${t('brandChecked')} ${lang==='de'?BRAND_CHECKED:'23 Nov 2026'}. ` +
+    `<a href="${b.repair}" target="_blank" rel="noopener">${t('brandRepair')} ↗</a><br>${t('brandTip')}`;
+}
+function onBrandChange(){
+  const id = $('#lBrand').value;
+  renderBrandInfo();
+  if (!id || id === '_other') return;
+  const b = BRANDS.find(x => x.id === id);
+  $('#lRecip').value = b.addr;
+  // Add the brand to the device field if it's still just the device type
+  const dv = $('#lDevice').value.trim();
+  const devWord = DEVICES.find(d => d.id === chosenDevice);
+  if (!dv || (devWord && dv === devWord.deL)) $('#lDevice').value = `${devWord && chosenDevice!=='other' ? devWord.deL + ' ' : ''}${b.name.replace(' (TV)','')} `;
+}
+
+function senderHead(){
+  const v = id => $(id).value.trim();
+  const sender = [v('#lName'), v('#lAddr'), v('#lMail')].filter(Boolean).join('\n');
+  const city = v('#lCity');
+  return `${sender}\n\n${v('#lRecip') || '[Empfänger: Firma, Adresse]'}\n\n${city?city+', ':''}${fmtDE(TODAY)}\n\n`;
+}
+function refLines(){
+  const serial = $('#lSerial').value.trim(), order = $('#lOrder').value.trim();
+  return [serial?`Seriennummer: ${serial}`:'', order?`Rechnungs-/Bestellnummer: ${order}`:''].filter(Boolean).join('\n');
+}
+const endDot = s => s + (/[.!?]$/.test(s) ? '' : '.');
 
 function buildLetter(){
   const v = id => $(id).value.trim();
-  const name=v('#lName'), addr=v('#lAddr'), mail=v('#lMail'), recip=v('#lRecip'), device=v('#lDevice'),
-        serial=v('#lSerial'), order=v('#lOrder'), defect=v('#lDefect'), city=v('#lCity');
+  const name=v('#lName'), device=v('#lDevice'), defect=v('#lDefect');
   const pd=parseDate($('#lDate').value), since=parseDate($('#lSince').value);
-  const days=parseInt($('#lDays').value,10); const deadline=new Date(TODAY); deadline.setDate(deadline.getDate()+days);
+  const days=parseInt($('#lDays').value,10); const deadline=addDays(TODAY, days);
   const type=ltype();
-  const sender=[name, addr, mail].filter(Boolean).join('\n');
-  const head=`${sender}\n\n${recip || '[Empfänger: Firma, Adresse]'}\n\n${city?city+', ':''}${fmtDE(TODAY)}\n\n`;
-  const ref=[serial?`Seriennummer: ${serial}`:'', order?`Rechnungs-/Bestellnummer: ${order}`:''].filter(Boolean).join('\n');
+  const ref=refLines();
   const bought = pd ? `am ${fmtDE(pd)}` : '[Kaufdatum]';
   const sinceTxt = since ? ` Der Fehler ist am ${fmtDE(since)} erstmals aufgetreten.` : '';
   let body;
@@ -573,7 +784,7 @@ Sehr geehrte Damen und Herren,
 
 ${bought} habe ich bei Ihnen folgendes Gerät gekauft: ${device}.${ref?'\n'+ref:''}
 
-Das Gerät weist folgenden Mangel auf: ${defect}${/[.!?]$/.test(defect)?'':'.'}${sinceTxt}
+Das Gerät weist folgenden Mangel auf: ${endDot(defect)}${sinceTxt}
 
 Gemäß §§ 437 Nr. 1, 439 Abs. 1 BGB verlange ich Nacherfüllung. Ich wähle ausdrücklich die Beseitigung des Mangels durch Reparatur (Nachbesserung). Die dafür erforderlichen Aufwendungen, insbesondere Transport-, Wege-, Arbeits- und Materialkosten, haben Sie zu tragen (§ 439 Abs. 2 BGB).
 ${ext}
@@ -595,7 +806,7 @@ Sehr geehrte Damen und Herren,
 
 ich bin Eigentümer/in des folgenden Geräts, das ich ${bought} gekauft habe: ${device}.${ref?'\n'+ref:''}
 
-Das Gerät weist folgenden Defekt auf: ${defect}${/[.!?]$/.test(defect)?'':'.'}${sinceTxt}
+Das Gerät weist folgenden Defekt auf: ${endDot(defect)}${sinceTxt}
 
 Das Gerät gehört zu einer Produktgruppe nach Anhang II der Richtlinie (EU) 2024/1799 (§ 479a BGB). Hiermit verlange ich von Ihnen als Hersteller die Reparatur des Geräts gemäß § 479b BGB.
 ${prev}
@@ -611,7 +822,7 @@ Mit freundlichen Grüßen
 
 ${name}`;
   }
-  return { text: head + body, subject: body.split('\n')[0].replace(/^Betreff: /,''), deadline, type };
+  return { text: senderHead() + body, subject: body.split('\n')[0].replace(/^Betreff: /,''), deadline, type, file: type==='maker' ? 'Reparaturverlangen' : 'Mangelanzeige' };
 }
 
 let lastLetter = null;
@@ -619,8 +830,8 @@ function renderExplain(){
   if(!lastLetter) return;
   const de = lang==='de'; const dl = fmtL(lastLetter.deadline);
   const common = de
-    ? `<li>Schick den Brief per E-Mail <em>und</em> heb eine Kopie auf. Bei wichtigen Fristen: per Einwurf-Einschreiben.</li><li>Antwortet niemand bis zum <strong>${dl}</strong>, hol dir Hilfe bei der Verbraucherzentrale.</li>`
-    : `<li>Send it by email <em>and</em> keep a copy. For important deadlines, send it by post as “Einwurf-Einschreiben” (registered mail).</li><li>No answer by <strong>${dl}</strong>? Get help from the Verbraucherzentrale (consumer advice centre).</li>`;
+    ? `<li>Schick den Brief per E-Mail <em>und</em> heb eine Kopie auf. Bei wichtigen Fristen: per Einwurf-Einschreiben.</li><li>Trag dir die Frist (<strong>${dl}</strong>) mit dem Kalender-Knopf ein. Keine Antwort oder ein Nein? Dann weiter mit <a href="#followup">Schritt 3: Nachfassen</a>.</li>`
+    : `<li>Send it by email <em>and</em> keep a copy. For important deadlines, send it by post as “Einwurf-Einschreiben” (registered mail).</li><li>Put the deadline (<strong>${dl}</strong>) in your calendar with the button above. No answer or a no? Go on to <a href="#followup">step 3: follow up</a>.</li>`;
   const specific = lastLetter.type==='seller'
     ? (de ? `<li>Du sagst dem Händler: Das Gerät hat einen Mangel, und du willst eine <strong>kostenlose Reparatur</strong> (Gewährleistung).</li><li>Wichtig: Wähle Reparatur statt Ersatzgerät – bei Käufen ab 31.07.2026 verlängert das deine Gewährleistung um 12 Monate.</li><li>Leg eine Kopie der Rechnung bei.</li>`
           : `<li>You tell the seller: the device has a defect and you want a <strong>free repair</strong> under the legal warranty (“Gewährleistung”).</li><li>Choosing repair instead of a replacement extends your warranty by 12 months for purchases from 31 July 2026.</li><li>Attach a copy of your receipt.</li>`)
@@ -629,10 +840,190 @@ function renderExplain(){
   $('#explain').innerHTML = `<h3>${de?'Was steht im Brief?':'What does the letter say?'}</h3><ul>${specific}${common}</ul>`;
 }
 
+/* ============ Follow-up letter ============ */
+function updateFuLabels(){
+  $('#fuFailLbl').textContent = t(radio('futo') === 'maker' ? 'fuFailMaker' : 'fuFailSeller');
+  $('#fuReasonWrap').classList.toggle('hidden', radio('fuwhat') !== 'refused');
+}
+
+function buildFollowup(){
+  const v = id => $(id).value.trim();
+  const name=v('#lName'), device=v('#lDevice'), defect=v('#lDefect').replace(/[.!?]+$/,'');
+  const pd=parseDate($('#lDate').value), first=parseDate($('#fuDate').value);
+  const to=radio('futo'), what=radio('fuwhat'), reason=v('#fuReason').replace(/[.!?]+$/,'');
+  const deadline=addDays(TODAY, parseInt($('#fuDays').value,10));
+  const ref=refLines();
+  const firstTxt = first ? `vom ${fmtDE(first)}` : 'vom [Datum des ersten Schreibens]';
+  const bought = pd ? `am ${fmtDE(pd)}` : '[Kaufdatum]';
+  const defectTxt = defect ? ` (${defect})` : '';
+  const reasonTxt = reason ? ` mit der Begründung „${reason}“` : '';
+  const dl = fmtDE(deadline);
+  let subject, main;
+  if (to === 'seller'){
+    subject = `Letzte Frist zur Mangelbeseitigung – mein Schreiben ${firstTxt} – ${device}`;
+    const happened = {
+      noreply: 'Bis heute habe ich darauf keine Antwort erhalten, und der Mangel ist nicht beseitigt.',
+      refused: `Sie haben die Nacherfüllung abgelehnt${reasonTxt}. Diese Ablehnung halte ich für unberechtigt.`,
+      failed:  'Sie haben das Gerät daraufhin repariert. Der Mangel ist jedoch weiterhin vorhanden bzw. erneut aufgetreten.'
+    }[what];
+    main =
+`mit Schreiben ${firstTxt} habe ich Ihnen einen Mangel an dem ${bought} bei Ihnen gekauften Gerät ${device} angezeigt${defectTxt} und Nacherfüllung durch Reparatur verlangt.${ref?'\n'+ref:''}
+
+${happened}
+
+Ich setze Ihnen hiermit eine letzte Frist bis zum ${dl}, den Mangel vollständig und für mich kostenfrei zu beseitigen (§§ 437 Nr. 1, 439 BGB).
+
+Sollte die Frist ergebnislos verstreichen, behalte ich mir vor, vom Kaufvertrag zurückzutreten oder den Kaufpreis zu mindern sowie Schadensersatz zu verlangen (§§ 437 Nr. 2 und 3, 440, 323, 441 BGB). Auf § 475d BGB weise ich hin.`;
+  } else if (what === 'noreply'){
+    subject = `Erinnerung: Reparaturverlangen nach § 479b BGB ${firstTxt} – ${device}`;
+    main =
+`mit Schreiben ${firstTxt} habe ich von Ihnen als Hersteller die Reparatur des folgenden Geräts nach § 479b BGB verlangt: ${device}${defectTxt}.${ref?'\n'+ref:''}
+
+Bis heute habe ich darauf keine Antwort erhalten.
+
+Nach § 479b Abs. 1 BGB sind Sie verpflichtet, das Gerät auf mein Verlangen innerhalb einer angemessenen Frist zu reparieren. Bitte teilen Sie mir bis zum ${dl} mit, zu welchem Preis und bis wann Sie die Reparatur durchführen und wie ich Ihnen das Gerät übergeben kann.
+
+Sollte ich bis dahin keine Antwort erhalten, werde ich mich von der Verbraucherzentrale beraten lassen und weitere Schritte prüfen.`;
+  } else if (what === 'refused'){
+    subject = `Ihre Ablehnung meines Reparaturverlangens nach § 479b BGB – ${device}`;
+    main =
+`mit Schreiben ${firstTxt} habe ich von Ihnen als Hersteller die Reparatur des folgenden Geräts nach § 479b BGB verlangt: ${device}${defectTxt}.${ref?'\n'+ref:''}
+
+Sie haben die Reparatur abgelehnt${reasonTxt}.
+
+Nach § 479b Abs. 2 BGB entfällt Ihre Reparaturpflicht nur, wenn die Reparatur tatsächlich oder rechtlich unmöglich ist. Die Reparatur darf insbesondere nicht allein deshalb verweigert werden, weil das Gerät früher von anderen repariert wurde.
+
+Ich fordere Sie daher auf, mir bis zum ${dl} entweder die Reparatur verbindlich zuzusagen (mit Preis und Dauer) oder schriftlich und nachvollziehbar zu begründen, warum eine Reparatur unmöglich ist.
+
+Andernfalls behalte ich mir vor, das Gerät anderweitig reparieren zu lassen und Ersatz der dafür erforderlichen Kosten von Ihnen zu verlangen.`;
+  } else {
+    subject = `Mangelhafte Reparatur nach § 479b BGB – Aufforderung zur Nacherfüllung – ${device}`;
+    main =
+`auf mein Reparaturverlangen ${firstTxt} haben Sie das folgende Gerät gegen Entgelt repariert: ${device}.${ref?'\n'+ref:''}
+
+Der Defekt besteht jedoch weiterhin bzw. ist erneut aufgetreten${defectTxt}.
+
+Gemäß § 479b Abs. 4 BGB in Verbindung mit § 635 BGB verlange ich, dass Sie den Defekt bis zum ${dl} für mich kostenfrei beseitigen.
+
+Nach fruchtlosem Ablauf dieser Frist behalte ich mir vor, den Defekt selbst beseitigen zu lassen und Ersatz der erforderlichen Aufwendungen zu verlangen (§ 637 BGB) oder die Vergütung zu mindern (§ 638 BGB).`;
+  }
+  const body = `Betreff: ${subject}\n\nSehr geehrte Damen und Herren,\n\n${main}\n\nMit freundlichen Grüßen\n\n${name}`;
+  return { text: senderHead() + body, subject, deadline, to, what, file: 'Zweites-Schreiben' };
+}
+
+let lastFu = null;
+function renderFuExplain(){
+  if(!lastFu) return;
+  const de = lang==='de'; const dl = fmtL(lastFu.deadline);
+  const L = (href, txt) => `<a href="${href}" target="_blank" rel="noopener">${txt}</a>`;
+  const vz = L('https://www.verbraucherzentrale.de/', 'Verbraucherzentrale');
+  const usst = L('https://www.verbraucher-schlichter.de/', de?'Universalschlichtungsstelle des Bundes':'Universalschlichtungsstelle des Bundes (federal dispute resolution body)');
+  const evz = L('https://www.evz.de/', de?'Europäische Verbraucherzentrum (EVZ)':'European Consumer Centre (EVZ)');
+  let steps = [];
+  if (lastFu.to === 'seller'){
+    steps = de ? [
+      `Kommt bis <strong>${dl}</strong> keine Lösung, kannst du vom Kauf <strong>zurücktreten</strong> (Geld zurück, Gerät zurückgeben) oder den <strong>Preis mindern</strong>. Bei Verbraucherkäufen brauchst du dafür nach einer angemessenen Zeit nicht einmal diese zweite Frist (§ 475d BGB) – der Brief macht die Lage aber eindeutig.`,
+      lastFu.what==='failed' ? 'Ist der Fehler nach einer Reparatur wieder da, kannst du nach § 475d BGB sogar sofort zurücktreten.' : '',
+      `Bevor du zurücktrittst: Lass dich von der ${vz} beraten (persönliche Beratung, teils kostenpflichtig).`,
+      `Streit mit einem Händler in Deutschland? Die ${usst} vermittelt außergerichtlich, für Verbraucher in der Regel kostenlos. Die Firma kann die Teilnahme ablehnen.`,
+      `Händler in einem anderen EU-Land? Dann hilft das ${evz} kostenlos.`
+    ] : [
+      `If nothing is solved by <strong>${dl}</strong>, you can <strong>withdraw from the purchase</strong> (money back, return the device) or <strong>reduce the price</strong>. In consumer sales you don’t even need this second deadline after a reasonable time (§ 475d BGB) – but the letter makes the situation clear.`,
+      lastFu.what==='failed' ? 'If the fault comes back after a repair, § 475d BGB even lets you withdraw right away.' : '',
+      `Before you withdraw: get advice from the ${vz} (personal advice, partly paid).`,
+      `Dispute with a shop in Germany? The ${usst} mediates out of court, usually free for consumers. The company may decline to take part.`,
+      `Shop in another EU country? The ${evz} helps for free.`
+    ];
+  } else {
+    const byCase = {
+      noreply: de ? `Wie lange der Hersteller schweigen darf, steht nicht im Gesetz – er muss „in angemessener Zeit“ reparieren. Bleibt er bis <strong>${dl}</strong> stumm, ist die ${vz} dein nächster Schritt.`
+                  : `The law doesn’t say how long the manufacturer may stay silent – it must repair “within a reasonable time”. If there’s still no answer by <strong>${dl}</strong>, the ${vz} is your next step.`,
+      refused: de ? `Der Hersteller darf nur ablehnen, wenn die Reparatur unmöglich ist. Laut Verbraucherzentrale kannst du bei einer Ablehnung woanders reparieren lassen und die Kosten vom Hersteller verlangen. Heb dafür alle Rechnungen auf – und lass dich vorher bei der ${vz} beraten.`
+                  : `The manufacturer may only refuse if repair is impossible. According to the Verbraucherzentrale, if it refuses you can have it repaired elsewhere and claim the costs from the manufacturer. Keep all invoices – and get advice from the ${vz} first.`,
+      failed:  de ? `Hat eine bezahlte Reparatur nicht geholfen, kannst du eine neue Reparatur verlangen. Nach Ablauf der Frist (<strong>${dl}</strong>) darfst du selbst reparieren lassen und die Kosten verlangen oder den Preis mindern (§ 479b Abs. 4 BGB). Heb alle Rechnungen auf und lass dich im Zweifel bei der ${vz} beraten.`
+                  : `If a paid repair didn’t fix it, you can ask for a new repair. After the deadline (<strong>${dl}</strong>) you may have it repaired elsewhere and claim the costs, or pay less (§ 479b Abs. 4 BGB). Keep all invoices and, if unsure, get advice from the ${vz}.`
+    };
+    steps = de ? [
+      byCase[lastFu.what],
+      `Hersteller in Deutschland? Die ${usst} vermittelt außergerichtlich, für Verbraucher in der Regel kostenlos. Die Firma kann die Teilnahme ablehnen.`,
+      `Hersteller in einem anderen EU-Land (z. B. Apple in Irland, Fairphone in den Niederlanden)? Dann hilft das ${evz} kostenlos.`
+    ] : [
+      byCase[lastFu.what],
+      `Manufacturer in Germany? The ${usst} mediates out of court, usually free for consumers. The company may decline to take part.`,
+      `Manufacturer in another EU country (e.g. Apple in Ireland, Fairphone in the Netherlands)? The ${evz} helps for free.`
+    ];
+  }
+  const common = de
+    ? `<li>Schick den Brief per E-Mail <em>und</em> als Einwurf-Einschreiben. Heb beide Briefe und alle Antworten auf.</li>`
+    : `<li>Send the letter by email <em>and</em> as “Einwurf-Einschreiben” (registered mail). Keep both letters and all replies.</li>`;
+  $('#fuExplain').innerHTML = `<h3>${de?'Was jetzt?':'What now?'}</h3><ul>${steps.filter(Boolean).map(s=>`<li>${s}</li>`).join('')}${common}</ul>`;
+}
+
+/* ============ Output actions (copy, mail, print, file, calendar) ============ */
+function currentDoc(forId){ return forId === 'fuText' ? lastFu : lastLetter; }
+function icsFor(deadline){
+  const d = addDays(deadline, 1); // remind the day after the deadline
+  const p = n => String(n).padStart(2,'0');
+  const day = x => `${x.getFullYear()}${p(x.getMonth()+1)}${p(x.getDate())}`;
+  const now = new Date();
+  const stamp = `${now.getUTCFullYear()}${p(now.getUTCMonth()+1)}${p(now.getUTCDate())}T${p(now.getUTCHours())}${p(now.getUTCMinutes())}${p(now.getUTCSeconds())}Z`;
+  const url = location.href.split('#')[0] + '#followup';
+  const escI = s => s.replace(/[\\;,]/g, m => '\\' + m);
+  return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Secondwind//DE','CALSCALE:GREGORIAN','BEGIN:VEVENT',
+    `UID:${stamp}-${Math.random().toString(36).slice(2)}@secondwind`, `DTSTAMP:${stamp}`,
+    `DTSTART;VALUE=DATE:${day(d)}`, `DTEND;VALUE=DATE:${day(addDays(d,1))}`,
+    `SUMMARY:${escI(t('calTitle'))}`, `DESCRIPTION:${escI(t('calDesc') + ' ' + url)}`, `URL:${url}`,
+    'BEGIN:VALARM','TRIGGER:PT9H','ACTION:DISPLAY',`DESCRIPTION:${escI(t('calTitle'))}`,'END:VALARM',
+    'END:VEVENT','END:VCALENDAR'].join('\r\n') + '\r\n';
+}
+function saveBlob(content, type, name){
+  const blob = new Blob([content], {type});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 1500);
+}
+$$('.btnrow[data-for]').forEach(row => row.addEventListener('click', async e => {
+  const btn = e.target.closest('[data-act]'); if (!btn) return;
+  e.preventDefault();
+  const ta = $('#' + row.dataset.for); const txt = ta.value; const doc = currentDoc(row.dataset.for);
+  switch (btn.dataset.act){
+    case 'copy':
+      try { await navigator.clipboard.writeText(txt); } catch(_){ ta.select(); document.execCommand('copy'); }
+      toast(t('copied')); break;
+    case 'mail':
+      location.href = `mailto:?subject=${encodeURIComponent(doc ? doc.subject : 'Reparatur')}&body=${encodeURIComponent(txt)}`; break;
+    case 'print':
+      $('#printLetter').textContent = txt; window.print(); break;
+    case 'down':
+      saveBlob(txt, 'text/plain;charset=utf-8', (doc ? doc.file : 'Brief') + '.txt'); break;
+    case 'cal':
+      if (doc) saveBlob(icsFor(doc.deadline), 'text/calendar;charset=utf-8', 'Secondwind-Frist.ics'); break;
+  }
+}));
+
+/* ============ Translation (Cloudflare Worker) ============ */
+function trMsg(key, isErr){ const m=$('#trMsg'); m.textContent = key ? t(key) : ''; m.classList.toggle('err', !!isErr); }
+async function translateDefect(){
+  const txt = $('#lDefect').value.trim();
+  $('#trBox').classList.add('hidden');
+  if (txt.length < 3) return trMsg('trErr_empty', true);
+  if (txt.length > 500) return trMsg('trErr_too_long', true);
+  const btn = $('#bTr'); btn.disabled = true; btn.textContent = t('trBusy'); trMsg('');
+  const ctrl = new AbortController(); const timer = setTimeout(() => ctrl.abort(), 20000);
+  try {
+    const r = await fetch(WORKER_URL + '/translate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text: txt}), signal: ctrl.signal });
+    const j = await r.json().catch(() => ({}));
+    if (r.ok && j.de){ $('#trText').value = j.de; $('#trBox').classList.remove('hidden'); $('#trText').focus(); }
+    else trMsg('trErr_' + (['empty','too_long','off_topic','rate_limited'].includes(j.error) ? j.error : 'unavailable'), true);
+  } catch(_){ trMsg('trErr_unavailable', true); }
+  finally { clearTimeout(timer); btn.disabled = false; btn.textContent = t('bTr'); }
+}
+
 /* ============ Wire up ============ */
 $$('.lang button').forEach(b => b.addEventListener('click', () => applyLang(b.dataset.lang)));
 $('#checkForm').addEventListener('submit', e => { e.preventDefault(); runCheck(); });
+$('#device').addEventListener('change', () => { chosenDevice = $('#device').value; fillBrands(); });
 $$('input[name=ltype]').forEach(r => r.addEventListener('change', onTypeChange));
+$('#lBrand').addEventListener('change', onBrandChange);
 $('#letterForm').addEventListener('submit', e => {
   e.preventDefault();
   if(!$('#lName').value.trim() || !$('#lDevice').value.trim() || !$('#lDefect').value.trim()){ toast(t('needFields')); return; }
@@ -640,26 +1031,33 @@ $('#letterForm').addEventListener('submit', e => {
   $('#letterText').value = lastLetter.text;
   $('#out').classList.remove('hidden');
   renderExplain();
+  // Prepare step 3 from step 2
+  document.querySelector(`input[name=futo][value=${lastLetter.type}]`).checked = true;
+  if (!$('#fuDate').value) $('#fuDate').value = `${TODAY.getFullYear()}-${String(TODAY.getMonth()+1).padStart(2,'0')}-${String(TODAY.getDate()).padStart(2,'0')}`;
+  updateFuLabels();
   $('#out').scrollIntoView({behavior:'smooth', block:'start'});
 });
-$('#bCopy').addEventListener('click', async () => {
-  const txt = $('#letterText').value;
-  try { await navigator.clipboard.writeText(txt); } catch(e){ $('#letterText').select(); document.execCommand('copy'); }
-  toast(t('copied'));
-});
-$('#bMail').addEventListener('click', e => {
+$$('input[name=futo], input[name=fuwhat]').forEach(r => r.addEventListener('change', () => { updateFuLabels(); $('#fuOut').classList.add('hidden'); }));
+$('#fuForm').addEventListener('submit', e => {
   e.preventDefault();
-  const txt = $('#letterText').value; const subj = lastLetter ? lastLetter.subject : 'Reparatur';
-  location.href = `mailto:?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(txt)}`;
+  if(!$('#lName').value.trim() || !$('#lDevice').value.trim()){ toast(t('needFieldsFu')); $('#letter').scrollIntoView({behavior:'smooth'}); return; }
+  lastFu = buildFollowup();
+  $('#fuText').value = lastFu.text;
+  $('#fuOut').classList.remove('hidden');
+  renderFuExplain();
+  $('#fuOut').scrollIntoView({behavior:'smooth', block:'start'});
 });
-$('#bPrint').addEventListener('click', () => { $('#printLetter').textContent = $('#letterText').value; window.print(); });
-$('#bDown').addEventListener('click', () => {
-  const blob = new Blob([$('#letterText').value], {type:'text/plain;charset=utf-8'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = (lastLetter && lastLetter.type==='maker' ? 'Reparaturverlangen' : 'Mangelanzeige') + '.txt';
-  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
-});
+if (WORKER_URL){
+  $('#trWrap').classList.remove('hidden');
+  $('#bTr').addEventListener('click', translateDefect);
+  $('#bTrUse').addEventListener('click', () => {
+    const v = $('#trText').value.trim(); if (!v) return;
+    $('#lDefect').value = v; $('#trBox').classList.add('hidden'); trMsg('trDone');
+  });
+  $('#bTrDrop').addEventListener('click', () => { $('#trBox').classList.add('hidden'); trMsg(''); });
+}
 
+onTypeChange();
 applyLang((navigator.language||'de').toLowerCase().startsWith('de') ? 'de' : 'en');
 </script>
 </body>
