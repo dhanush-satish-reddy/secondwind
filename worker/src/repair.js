@@ -35,21 +35,26 @@ out center tags 150;`;
 }
 
 async function overpass(query) {
-  let lastErr = "unavailable";
+  const notes = [];
   for (const endpoint of OVERPASS) {
+    const host = new URL(endpoint).hostname.split(".")[0];
     try {
       const res = await fetchWithTimeout(endpoint, {
         method: "POST",
         headers: { "User-Agent": UA, "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
         body: "data=" + encodeURIComponent(query),
-      }, 25000);
-      if (res.ok) return await res.json();
-      lastErr = res.status === 429 ? "busy" : "unavailable";
-    } catch {
-      lastErr = "unavailable";
+      }, 20000);
+      if (res.ok) {
+        try { return await res.json(); } catch { notes.push(host + ":badjson"); continue; }
+      }
+      notes.push(host + ":" + res.status);
+    } catch (e) {
+      notes.push(host + ":" + (e && e.name === "AbortError" ? "timeout" : "neterr"));
     }
   }
-  throw new Error(lastErr);
+  const err = new Error("unavailable");
+  err.detail = notes.join(",");
+  throw err;
 }
 
 // What kind of place is this, and does it fit the device?

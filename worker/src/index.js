@@ -118,7 +118,8 @@ async function handleRepair(request, env, okOrigin, url) {
   try {
     r = await lookupRepair(plz, dev, { cache: env.CACHE });
   } catch (e) {
-    return json({ error: "unavailable" }, 503, okOrigin);
+    // detail = only the map servers' status codes (no user data), to diagnose outages
+    return json({ error: "unavailable", detail: String((e && e.detail) || "").slice(0, 120) }, 503, okOrigin);
   }
   if (r.error) return json({ error: r.error }, 404, okOrigin);
   return json(r, 200, okOrigin, { "Cache-Control": `public, max-age=${REPAIR_CACHE_SECONDS}` });
