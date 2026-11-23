@@ -1,0 +1,16 @@
+{
+  "name": "Secondwind – Reparieren statt wegwerfen",
+  "short_name": "Secondwind",
+  "description": "Kostenloser Helfer für das Recht auf Reparatur in Deutschland.",
+  "lang": "de",
+  "start_url": "./#start",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f1e7",
+  "theme_color": "#1f6f52",
+  "icons": [
+    { "src": "icon-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
