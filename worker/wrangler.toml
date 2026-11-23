@@ -1,8 +1,11 @@
-# Cloudflare Worker for Secondwind: turns a defect description (any language)
-# into a short, factual German sentence for the letter.
-# Deploy: Cloudflare dashboard > Workers & Pages > Create > Import a repository
-#         > secondwind > root directory "worker".
-# No secrets, no database, no logs. Nothing the user types is stored.
+# Cloudflare Worker for Secondwind (the only backend).
+#   POST /translate  defect description (any language) -> short German sentence (Workers AI)
+#   GET  /repair     repair cafés and repair shops near a postcode (OpenStreetMap / Overpass)
+#   POST /company    a company's postal address, read from its own Impressum page
+# Deploy: Cloudflare dashboard > Workers & Pages > secondwind (connected to GitHub, root directory "worker").
+# No database, no logs. Nothing the user types is stored.
+# Optional secret (dashboard > secondwind > Settings > Variables and Secrets): GROQ_API_KEY
+#   -> lets the company lookup search the web. Without it, the Worker uses Wikidata or the website the user pastes.
 
 name = "secondwind"
 main = "src/index.js"
@@ -13,19 +16,32 @@ workers_dev = true
 [ai]
 binding = "AI"
 
-# Abuse protection: max 5 translations per minute per visitor (IP is hashed, counters are not stored by us)
+# Abuse protection (the visitor's IP is hashed; counters are kept by Cloudflare, not by us)
 [[ratelimits]]
-name = "RATE_LIMITER"
+name = "RATE_LIMITER"      # translation: 5 per minute
 namespace_id = "2611"
-
   [ratelimits.simple]
   limit = 5
+  period = 60
+
+[[ratelimits]]
+name = "SEARCH_LIMITER"    # postcode search: 10 per minute
+namespace_id = "2612"
+  [ratelimits.simple]
+  limit = 10
+  period = 60
+
+[[ratelimits]]
+name = "LOOKUP_LIMITER"    # company lookup: 3 per minute
+namespace_id = "2613"
+  [ratelimits.simple]
+  limit = 3
   period = 60
 
 [vars]
 # Only this website may use the backend
 ALLOWED_ORIGINS = "https://dhanush-satish-reddy.github.io"
 
-# Logging off: we never want defect texts in any log
+# Logging off: we never want anything the user types in any log
 [observability]
 enabled = false
