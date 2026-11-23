@@ -1,0 +1,31 @@
+# Cloudflare Worker for Secondwind: turns a defect description (any language)
+# into a short, factual German sentence for the letter.
+# Deploy: Cloudflare dashboard > Workers & Pages > Create > Import a repository
+#         > secondwind > root directory "worker".
+# No secrets, no database, no logs. Nothing the user types is stored.
+
+name = "secondwind"
+main = "src/index.js"
+compatibility_date = "2026-11-15"
+workers_dev = true
+
+# Workers AI (free daily allowance; on the Free plan it stops instead of charging)
+[ai]
+binding = "AI"
+
+# Abuse protection: max 5 translations per minute per visitor (IP is hashed, counters are not stored by us)
+[[ratelimits]]
+name = "RATE_LIMITER"
+namespace_id = "2611"
+
+  [ratelimits.simple]
+  limit = 5
+  period = 60
+
+[vars]
+# Only this website may use the backend
+ALLOWED_ORIGINS = "https://dhanush-satish-reddy.github.io"
+
+# Logging off: we never want defect texts in any log
+[observability]
+enabled = false
