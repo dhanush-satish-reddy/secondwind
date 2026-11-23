@@ -1,0 +1,36 @@
+# Refreshes the repair cafés and repair shops for "Wo reparieren?" from OpenStreetMap.
+# Runs once a month (and when the build script changes). Free on public repositories.
+name: Refresh repair data (OpenStreetMap)
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 2 * *"
+  push:
+    branches: [main, v3]
+    paths:
+      - "tools/build-repair-data.mjs"
+      - ".github/workflows/refresh-repair-data.yml"
+permissions:
+  contents: write
+concurrency:
+  group: repair-data
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node tools/build-repair-data.mjs
+      - name: Save the new data
+        run: |
+          git config user.name "secondwind-data"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data
+          git diff --cached --quiet && { echo "no changes"; exit 0; }
+          git commit -m "Refresh repair data from OpenStreetMap"
+          git pull --rebase
+          git push
